@@ -1,11 +1,11 @@
 import './App.css'
-import  SearchComponent from "./components/SearchComponent/SearchComponent"
+import SelectComponent from './components/SelectComponent/SelectComponent'
 
 function App() {
 
   return (
     <>
-      <SearchComponent/>
+      <SelectComponent/>
     </>
   )
 }
