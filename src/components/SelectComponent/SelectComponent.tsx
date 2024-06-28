@@ -1,24 +1,18 @@
 import { Select } from "antd"
-import { searchPersons } from "../../assets/helper"
+import { searchPersonsApi } from "../../assets/helper"
 import styles from "./selectComponent.module.css"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
+import { useInfiniteQuery } from "@tanstack/react-query"
+import Person from "../../assets/types"
 
 /**
  * SelectComponent is a React functional component that renders a searchable Select dropdown.
 It fetches data from a backend service and supports infinite scrolling to load more data.
- 
  * @component
  * @example
  *   <SelectComponent/>
-
- * Person interface representing the structure of a person object.
- * @type {Object} Person
- * @property {string} id - Unique identifier for the person.
- * @property {string} firstName - First name of the person.
- * @property {string} lastName - Last name of the person.
-
- * Select is a component from the Ant Design Library with custom search and scroll handlers, and customizable options.
-
+ *
+ * Select is a component from the Ant Design Library with custom search, scroll handlers and customizable options.
  * @component
  * @prop {boolean} showSearch - Enables the search functionality within the dropdown.
  * @prop {string} placeholder - Placeholder text to be displayed when no option is selected.
@@ -28,62 +22,59 @@ It fetches data from a backend service and supports infinite scrolling to load m
  * @prop {Array<{value: string, label: string}>} options - Array of options to be displayed in the dropdown.
  * @prop {boolean} filterOption - Disables the default filtering to allow custom search handling.
  * @prop {string} className - CSS class to style the Select component.
- * @example 
- * <Select
+ * @prop {string} value - The value that is selected.
+ * @example
+ *   <Select 
         showSearch
         placeholder="Select a person"
         notFoundContent="No results found"
         onSearch={handleSearch}
         onPopupScroll={handleScroll}
-        options={personsList.map((person)=> ({
+        options={personsList.map((person) => ({
             value: `${person.firstName} ${person.lastName}`,
-            label: `${person.firstName} ${person.lastName}`
+            label: `${person.firstName} ${person.lastName}`,
         }))}
         filterOption={false}
         className={styles.select}
     />
  */
 
-const SelectComponent  = () => {
+const SelectComponent: React.FC = () => {
     const [search, setSearch] = useState("")
-    const [personsList, setPersonsList] = useState<Person[]>([])
-    const [page, setPage] = useState(1)
-    const [load, setLoad] = useState(true)
 
     const size = 10
-    interface Person {
-        id: string
-        firstName: string
-        lastName: string
+
+    const getPersons = async ({ page = 1 }) => {
+        const result = await searchPersonsApi(search, page, size)
+        return result as Person[]
     }
 
-    useEffect(() => {
-        const fetchPersonsData = async () => {
-            try {
-                const result = await searchPersons(search, page, size)
-                setPersonsList((prev) => (page === 1 ? result : [...prev, ...result])) 
-                setLoad(result.length === size)
-            } catch (error) {
-                console.error("Error fetching the persons data:", error)
-            }
-        }
-    
-        fetchPersonsData()
+    const {
+        data: persons,
+        fetchNextPage,
+        hasNextPage,
+        error,
+    } = useInfiniteQuery<Person[]>({
+        queryKey: ["persons", search],
+        queryFn: ({ pageParam }) => getPersons({ page: pageParam as number }), 
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.length === size ? allPages.length + 1 : undefined,
+        initialPageParam: 1
+    })
 
-    }, [search, page])
+    const personsList = persons?.pages.map((page) => page).reduce((initial, value) => initial.concat(value), []) ?? []
+
 
     const handleSearch = (value: string) => {
         setSearch(value)
-        setPage(1)
-        setPersonsList([])
-        setLoad(true)
     }
+
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const { scrollTop, offsetHeight, scrollHeight } = e.currentTarget
 
-        if (scrollTop + offsetHeight === scrollHeight && load) {
-            setPage((prev) => prev + 1)
+        if (scrollTop + offsetHeight === scrollHeight && hasNextPage) {
+            fetchNextPage()
         }
     }
 
@@ -95,13 +86,14 @@ const SelectComponent  = () => {
                 notFoundContent="No results found"
                 onSearch={handleSearch}
                 onPopupScroll={handleScroll}
-                options={personsList.map((person)=> ({
+                options={personsList.map((person) => ({
                     value: `${person.firstName} ${person.lastName}`,
-                    label: `${person.firstName} ${person.lastName}`
+                    label: `${person.firstName} ${person.lastName}`,
                 }))}
                 filterOption={false}
                 className={styles.select}
             />
+            {error && <div> Error fetching data: {error.message}</div>}
         </div>
     )
 }
