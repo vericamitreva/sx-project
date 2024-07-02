@@ -1,99 +1,120 @@
 import { Select } from "antd"
-import { searchPersonsApi } from "../../assets/helper"
 import styles from "./selectComponent.module.css"
-import React, { useState } from "react"
-import { useInfiniteQuery } from "@tanstack/react-query"
-import Person from "../../assets/types"
+import React, { useState, useEffect, useCallback } from "react"
+import { useQuery } from "@tanstack/react-query"
+import type { Person, SelectComponentProps } from "../../assets/types"
 
 /**
  * SelectComponent is a React functional component that renders a searchable Select dropdown.
-It fetches data from a backend service and supports infinite scrolling to load more data.
- * @component
- * @example
- *   <SelectComponent/>
+ * It fetches data from a backend service and supports infinite scrolling to load more data.
  *
- * Select is a component from the Ant Design Library with custom search, scroll handlers and customizable options.
- * @component
  * @prop {boolean} showSearch - Enables the search functionality within the dropdown.
  * @prop {string} placeholder - Placeholder text to be displayed when no option is selected.
- * @prop {string} notFoundContent - Content to display when no results are found.
- * @prop {function} onSearch - Function to handle the search input changes.
- * @prop {function} onPopupScroll - Function to handle the scroll event within the dropdown.
- * @prop {Array<{value: string, label: string}>} options - Array of options to be displayed in the dropdown.
- * @prop {boolean} filterOption - Disables the default filtering to allow custom search handling.
+ * @prop {string} notFoundContent - Text to be displayed when no results are found.
+ * @prop {boolean} filterOption - Boolean used to customize how options are filtered in a searchable dropdown. False will disable the default filtering.
  * @prop {string} className - CSS class to style the Select component.
- * @prop {string} value - The value that is selected.
+ * @prop {string} value - The selected value from the dropdown.
+ * @prop {function} onChange - Function to handle the selection change.
+ * @prop {function} useQueryFunction - Function to fetch the data.
+ * 
  * @example
- *   <Select 
-        showSearch
-        placeholder="Select a person"
-        notFoundContent="No results found"
-        onSearch={handleSearch}
-        onPopupScroll={handleScroll}
-        options={personsList.map((person) => ({
-            value: `${person.firstName} ${person.lastName}`,
-            label: `${person.firstName} ${person.lastName}`,
-        }))}
-        filterOption={false}
-        className={styles.select}
-    />
+ * <SelectComponent
+ *   showSearch={true}
+ *   placeholder="Select a person"
+ *   notFoundContent="No results found"
+ *   filterOption={false}
+ *   className="someClassName"
+ *   value={selectedValue}
+ *   onChange={handleChange}
+ *   useQueryFunction={fetchPersons}
+ * />
  */
 
-const SelectComponent: React.FC = () => {
+const SelectComponent: React.FC<SelectComponentProps> = ({
+    showSearch,
+    placeholder,
+    notFoundContent,
+    filterOption,
+    className,
+    value: selectedValue,
+    onChange,
+    useQueryFunction
+}) => {
     const [search, setSearch] = useState("")
-
-    const size = 10
-
-    const getPersons = async ({ page = 1 }) => {
-        const result = await searchPersonsApi(search, page, size)
-        return result as Person[]
-    }
+    const [value, setValue] = useState(selectedValue)
+    const [page, setPage] = useState(1)
+    const [personsList, setPersonsList] = useState<Person[]>([])
+    const [hasMore, setHasMore] = useState(true)
 
     const {
         data: persons,
-        fetchNextPage,
-        hasNextPage,
+        isLoading,
         error,
-    } = useInfiniteQuery<Person[]>({
-        queryKey: ["persons", search],
-        queryFn: ({ pageParam }) => getPersons({ page: pageParam as number }), 
-        getNextPageParam: (lastPage, allPages) =>
-            lastPage.length === size ? allPages.length + 1 : undefined,
-        initialPageParam: 1
+        refetch
+    } = useQuery<Person[]>({
+        queryKey: ["persons", search, page],
+        queryFn: () => useQueryFunction(search, page),
+        placeholderData: [],
+        enabled: !!search 
     })
 
-    const personsList = persons?.pages.map((page) => page).reduce((initial, value) => initial.concat(value), []) ?? []
-
+    useEffect(() => {
+        if (persons) {
+            setPersonsList(prevPersons => {
+                if (page === 1) {
+                    return persons 
+                } else {
+                    return [...prevPersons, ...persons]
+                }
+            })
+            setHasMore(persons.length === 10)
+        }
+    }, [persons, page])
 
     const handleSearch = (value: string) => {
         setSearch(value)
+        setPage(1)
     }
 
+    const handleChange = (value: string) => {
+        setValue(value)
+        onChange(value)
+    }
 
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
         const { scrollTop, offsetHeight, scrollHeight } = e.currentTarget
 
-        if (scrollTop + offsetHeight === scrollHeight && hasNextPage) {
-            fetchNextPage()
+        if (scrollTop + offsetHeight === scrollHeight && hasMore) {
+            setPage(prevPage => prevPage + 1)
         }
-    }
+    }, [hasMore])
+
+    useEffect(() => {
+        setValue(selectedValue)
+    }, [selectedValue])
+
+    useEffect(() => {
+        refetch()
+    }, [page])
 
     return (
         <div className={styles.componentContainer}>
             <Select
-                showSearch
-                placeholder="Select a person"
-                notFoundContent="No results found"
+                showSearch={showSearch}
+                placeholder={placeholder}
+                notFoundContent={isLoading ? "Loading..." : notFoundContent}
                 onSearch={handleSearch}
                 onPopupScroll={handleScroll}
                 options={personsList.map((person) => ({
                     value: `${person.firstName} ${person.lastName}`,
                     label: `${person.firstName} ${person.lastName}`,
                 }))}
-                filterOption={false}
-                className={styles.select}
+                filterOption={filterOption}
+                className={className}
+                value={value || undefined}
+                onChange={handleChange}
             />
-            {error && <div> Error fetching data: {error.message}</div>}
+            {error && <div>Error fetching data: {error.message}</div>}
         </div>
     )
 }

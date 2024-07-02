@@ -1,4 +1,4 @@
-import Person from "./types";
+import { Person } from "./types";
 import persons from "./../assets/data/personsData.json"
 
 export const searchPersonsApi = (search: string, page: number, size: number): Promise<Person[]> => {
