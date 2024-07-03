@@ -13,6 +13,8 @@ interface SelectComponentProps {
     value?: string;
     onChange: (value: string) => void;
     useQueryFunction: (search: string, page: number) => Promise<Person[]>;
+    search: string;
+    setSearch: (value: string) => void;
 }
 
 export type { Person, SelectComponentProps } 

@@ -16,6 +16,8 @@ import type { Person, SelectComponentProps } from "../../assets/types"
  * @prop {string} value - The selected value from the dropdown.
  * @prop {function} onChange - Function to handle the selection change.
  * @prop {function} useQueryFunction - Function to fetch the data.
+ * @prop {string} searchValue - The debounced search value.
+ * @prop {function} setSearch - Function to update the search value.
  * 
  * @example
  * <SelectComponent
@@ -38,9 +40,10 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
     className,
     value: selectedValue,
     onChange,
-    useQueryFunction
+    useQueryFunction,
+    search,
+    setSearch
 }) => {
-    const [search, setSearch] = useState("")
     const [value, setValue] = useState(selectedValue)
     const [page, setPage] = useState(1)
     const [personsList, setPersonsList] = useState<Person[]>([])
