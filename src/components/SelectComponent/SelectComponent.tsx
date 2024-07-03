@@ -18,6 +18,7 @@ import type { Person, SelectComponentProps } from "../../assets/types"
  * @prop {function} useQueryFunction - Function to fetch the data.
  * @prop {string} searchValue - The debounced search value.
  * @prop {function} setSearch - Function to update the search value.
+ * @prop {string} mode - Determines the mode of the Select component. When set to "multiple", it is allowing selection of multiple items.
  * 
  * @example
  * <SelectComponent
