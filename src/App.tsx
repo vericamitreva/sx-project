@@ -37,6 +37,7 @@ function App() {
                 useQueryFunction={useQueryFunction}
                 search={debouncedSearch}
                 setSearch={setSearch}
+                mode="multiple"
             />
         </QueryClientProvider>
     )

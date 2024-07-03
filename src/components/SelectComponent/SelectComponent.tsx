@@ -42,7 +42,8 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
     onChange,
     useQueryFunction,
     search,
-    setSearch
+    setSearch,
+    mode
 }) => {
     const [value, setValue] = useState(selectedValue)
     const [page, setPage] = useState(1)
@@ -116,6 +117,7 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
                 className={className}
                 value={value || undefined}
                 onChange={handleChange}
+                mode={mode}
             />
             {error && <div>Error fetching data: {error.message}</div>}
         </div>

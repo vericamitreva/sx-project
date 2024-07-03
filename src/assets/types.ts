@@ -15,6 +15,7 @@ interface SelectComponentProps {
     useQueryFunction: (search: string, page: number) => Promise<Person[]>;
     search: string;
     setSearch: (value: string) => void;
+    mode?: "multiple" | "tags" | undefined;
 }
 
 export type { Person, SelectComponentProps } 
