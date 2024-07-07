@@ -15,3 +15,10 @@ export const searchPersonsApi = (search: string, page: number, size: number): Pr
     resolve(filteredPersons);
   });
 };
+
+export const fetchPersonById = async (id?: string): Promise<Person|undefined> => {
+  return new Promise((resolve) => {
+    const person = persons.find((person: Person) => person.id === id)
+    resolve(person)
+  })
+}

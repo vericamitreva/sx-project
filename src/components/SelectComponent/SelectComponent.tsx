@@ -1,7 +1,7 @@
 import { Select } from "antd"
 import styles from "./selectComponent.module.css"
 import React, { useState, useEffect, useCallback } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery } from "@tanstack/react-query"
 import type { Person, SelectComponentProps } from "../../assets/types"
 
 /**
@@ -47,38 +47,37 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
     mode
 }) => {
     const [value, setValue] = useState(selectedValue)
-    const [page, setPage] = useState(1)
     const [personsList, setPersonsList] = useState<Person[]>([])
-    const [hasMore, setHasMore] = useState(true)
+    const size = 10
 
     const {
         data: persons,
+        fetchNextPage,
         isLoading,
-        error,
-        refetch
-    } = useQuery<Person[]>({
-        queryKey: ["persons", search, page],
-        queryFn: () => useQueryFunction(search, page),
-        placeholderData: [],
-        enabled: !!search 
+        hasNextPage,
+        error
+    } = useInfiniteQuery<Person[]>({
+        queryKey: ["persons", search],
+        queryFn: ({ pageParam = 1 }) => useQueryFunction( search, pageParam as number ),
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.length === size ? allPages.length + 1 : undefined,
+        initialPageParam: 1
     })
 
     useEffect(() => {
         if (persons) {
-            setPersonsList(prevPersons => {
-                if (page === 1) {
-                    return persons 
-                } else {
-                    return [...prevPersons, ...persons]
-                }
-            })
-            setHasMore(persons.length === 10)
+            const allPersons = persons.pages.flat()
+            setPersonsList(allPersons as Person[])
         }
-    }, [persons, page])
+    }, [persons])
 
     const handleSearch = (value: string) => {
         setSearch(value)
-        setPage(1)
+
+        if (value === "") {
+            setValue(undefined)
+            onChange("")
+        }
     }
 
     const handleChange = (value: string) => {
@@ -89,18 +88,14 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
     const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
         const { scrollTop, offsetHeight, scrollHeight } = e.currentTarget
 
-        if (scrollTop + offsetHeight === scrollHeight && hasMore) {
-            setPage(prevPage => prevPage + 1)
+        if (scrollTop + offsetHeight === scrollHeight && hasNextPage) {
+            fetchNextPage()
         }
-    }, [hasMore])
+    }, [hasNextPage, fetchNextPage])
 
     useEffect(() => {
         setValue(selectedValue)
     }, [selectedValue])
-
-    useEffect(() => {
-        refetch()
-    }, [page])
 
     return (
         <div className={styles.componentContainer}>
