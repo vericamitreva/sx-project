@@ -1,0 +1,50 @@
+.editContainer {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 15%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    background-color: white;
+}
+
+.labelsContainer {
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+    gap: 1.5rem;
+}
+
+.labelContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    font-size: small;
+}
+
+.editText {
+    align-items: center;
+    border-bottom: 1px solid gray;
+}
+
+.editText h4 {
+    text-align: center;
+}
+
+.colorButtons {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.shapeButtons {
+    display: flex;
+    justify-content: space-around;
+}
+
+

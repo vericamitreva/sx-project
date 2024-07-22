@@ -11,6 +11,7 @@ interface SelectComponentProps {
     filterOption: boolean;
     className: string;
     value?: string;
+    strValue?: string;
     onChange: (value: string) => void;
     useQueryFunction: (search: string, page: number) => Promise<Person[]>;
     search: string;

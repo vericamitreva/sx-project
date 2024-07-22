@@ -1,0 +1,11 @@
+.customNode {
+  padding: 1rem 0.8rem;
+}
+
+.labelContainer {
+  white-space: pre-wrap; 
+  word-break: break-word; 
+  display: inline-block; 
+  margin: 1rem 0.5rem;
+}
+

@@ -40,6 +40,7 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
     filterOption,
     className,
     value: selectedValue,
+    strValue,
     onChange,
     useQueryFunction,
     search,
@@ -64,13 +65,6 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
         initialPageParam: 1
     })
 
-    useEffect(() => {
-        if (persons) {
-            const allPersons = persons.pages.flat()
-            setPersonsList(allPersons as Person[])
-        }
-    }, [persons])
-
     const handleSearch = (value: string) => {
         setSearch(value)
 
@@ -79,6 +73,10 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
             onChange("")
         }
     }
+
+    useEffect(()=> {
+        handleSearch(strValue ?? '');
+    }, [strValue])
 
     const handleChange = (value: string) => {
         setValue(value)
@@ -94,7 +92,16 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
     }, [hasNextPage, fetchNextPage])
 
     useEffect(() => {
+        if (persons) {
+            const allPersons = persons?.pages.flat()
+            setPersonsList(allPersons as Person[])
+            console.log(allPersons)
+        }
+    }, [persons])
+
+    useEffect(() => {
         setValue(selectedValue)
+        
     }, [selectedValue])
 
     return (
