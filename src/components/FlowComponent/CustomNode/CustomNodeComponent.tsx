@@ -1,7 +1,6 @@
 import React from 'react'
 import { Handle, NodeProps, Position } from 'reactflow'
 import styles from './customNodeComponent.module.css'
-import { CgShapeRhombus } from 'react-icons/cg';
 
 const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
   const nodeShape = data?.nodeShape || '10px'; 
@@ -17,7 +16,6 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
         <Handle type="source" position={Position.Left} id="left-source" style={{ top: '50%', transform: 'translateY(-50%)' }} isConnectable={isConnectable} />
         <Handle type="target" position={Position.Left} id="left-target" style={{ top: '50%', transform: 'translateY(-50%)', visibility: 'hidden' }} isConnectable={isConnectable} />
       </div>
-      {nodeShape === "rhombusShape" ? <CgShapeRhombus style={{backgroundColor: "red"}}/> : ""}
     </>
   )
 }
