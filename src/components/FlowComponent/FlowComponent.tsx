@@ -14,33 +14,31 @@ import { Button } from 'antd'
 import CustomEdgeComponent from "./CustomEdge/CustomEdgeComponent.tsx"
 import EditComponent from './Edit/EditComponent'
 import CustomNodeComponent from './CustomNode/CustomNodeComponent.tsx'
-import styles from "./flowComponent.module.css"
 
 const nodeTypes = { customNode: CustomNodeComponent }
 const edgeTypes = { customEdge: CustomEdgeComponent } 
 
-interface CustomNode extends Node {}
+interface CustomNode extends Node {
+}
 
 const FlowComponent = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<CustomNode[]>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([])
-  const [nodeName, setNodeName] = useState<string>('New Node')
-  const [nodeColor, setNodeColor] = useState<string>('black')
-  const [nodeShape, setNodeShape] = useState<string>('10px')
-  const [selectedNodeId, setSelectedNodeId] = useState<string>('')
+  const [nodeName, setNodeName] = useState<string>("New Node")
+  const [nodeColor, setNodeColor] = useState<string>("black")
+  const [nodeShape, setNodeShape] = useState<string>("rectangle")
+  const [selectedNodeId, setSelectedNodeId] = useState<string>("")
   const [isEditOpen, setIsEditOpen] = useState<boolean>(false)
 
   const addNewNode = () => {
     const newNode: CustomNode = {
       id: (nodes.length + 1).toString(),
-      data: { label: 'New Node' },
+      data: { label: "New Node", shape: "rectangle", color: "black" },
       position: {
         x: nodes.length * 20,
         y: nodes.length * 20,
       },
-      type: 'customNode',
-      style: { backgroundColor: "white", borderColor: 'black', borderRadius: '10px', color: 'black', border: '1px solid black', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' },
-      className: '',
+      type: "customNode"
     }
 
     setNodes((prev) => [...prev, newNode])
@@ -52,9 +50,9 @@ const FlowComponent = () => {
         addEdge(
           {
             ...params,
-            type: 'customEdge',
-            markerEnd: { type: MarkerType.Arrow, color: 'black' },
-            style: { strokeWidth: 1, stroke: 'black' },
+            type: "customEdge",
+            markerEnd: { type: MarkerType.Arrow, color: "black" },
+            style: { strokeWidth: 1, stroke: "black" },
           },
           edges
         )
@@ -65,8 +63,8 @@ const FlowComponent = () => {
   const selectNode = (node: CustomNode) => {
     setSelectedNodeId(node.id);
     setNodeName(node.data.label);
-    setNodeColor(node.style?.borderColor || 'black');
-    setNodeShape(node.style?.borderRadius?.toString() || '10px');
+    setNodeColor(node.data.color);
+    setNodeShape(node.data.shape);
     setIsEditOpen(true);
   }
 
@@ -77,15 +75,7 @@ const FlowComponent = () => {
           if (node.id === selectedNodeId) {
             return {
               ...node,
-              data: { ...node.data, label: nodeName },
-              style: {
-                ...node.style,
-                borderColor: nodeColor,
-                color: nodeColor,
-                borderRadius: nodeShape,
-                border: `1px solid ${nodeColor}`,
-              },
-              className: nodeShape === 'rhombusShape' ? styles.rhombusShape : ''
+              data: { ...node.data, label: nodeName, shape: nodeShape, color: nodeColor }
             }
           }
           return node

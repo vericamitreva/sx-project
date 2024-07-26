@@ -1,11 +1,99 @@
 .customNode {
-  padding: 1rem 0.8rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 100px; 
+  min-height: 100px; 
+  padding: 1rem;
+}
+
+.rectangle {
+  background: white;
+  border: 1px solid black;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 8px;
+}
+
+.oval {
+  background: white;
+  border: 1px solid black;
+  border-radius: 50%;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 8px;
+}
+
+.rhombus {
+  background: white;
+  border: 1px solid black;
+  transform: rotate(45deg);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 8px;
+}
+
+.red {
+  border: 1px solid red;
+}
+
+.yellow {
+  border: 1px solid yellow;
+}
+
+.green {
+  border: 1px solid green;
+}
+
+.handleRhombusTop {
+  left: 0;
+}
+
+.handleDefaultRightSource {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.handleRhombusRightSource {
+  top: 0;
+}
+
+.handleDefaultRightTarget {
+  top: 50%;
+  transform: translateY(-50%); 
+  visibility: hidden;
+}
+
+.handleRhombusRightTarget {
+  top: 0;
+}
+
+.handleDefaultLeftSource {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.handleRhombusLeftSource {
+  top: 100%;
+}
+
+.handleDefaultLeftTarget {
+  top: 50%;
+  transform: translateY(-50%);
+  visibility: hidden
+}
+
+.handleRhombusLeftTarget {
+  top: 100%;
+}
+
+.handleRhombusBottom {
+  left: 100%;
 }
 
 .labelContainer {
   white-space: pre-wrap; 
   word-break: break-word; 
   display: inline-block; 
-  margin: 1rem 0.5rem;
 }
 
+.labelRhombus {
+  transform: rotate(-45deg); 
+}

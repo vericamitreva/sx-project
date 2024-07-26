@@ -42,16 +42,16 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, onChange, setNo
             <label>Choose a border color:</label>
             <div className={styles.colorButtons}>
               <Button style={{ color: "red", border: "1px solid red" }} onClick={() => handleColorButtonClick("red")}> RED </Button>
-              <Button style={{ color: "#E1C16E", border: "1px solid #E1C16E" }} onClick={() => handleColorButtonClick("#E1C16E")}> YELLOW </ Button>
+              <Button style={{ color: "yellow", border: "1px solid yellow" }} onClick={() => handleColorButtonClick("yellow")}> YELLOW </ Button>
               <Button style={{ color: "green", border: "1px solid green" }} onClick={() => handleColorButtonClick("green")}> GREEN </Button>
             </div>
           </div>
           <div className={styles.labelContainer}>
             <label>Choose a node shape:</label>
             <div className={styles.shapeButtons}>
-              <Button onClick={() => handleShapeButtonClick("10px")}><LuRectangleHorizontal style={{ strokeWidth: "3" }} /></Button>
-              <Button onClick={() => handleShapeButtonClick("50%")}><TbOvalVertical style={{ strokeWidth: "3" }} /></Button>
-              <Button onClick={() => handleShapeButtonClick("rhombusShape")}><CgShapeRhombus /></Button>
+              <Button onClick={() => handleShapeButtonClick("rectangle")}><LuRectangleHorizontal style={{ strokeWidth: "3" }} /></Button>
+              <Button onClick={() => handleShapeButtonClick("oval")}><TbOvalVertical style={{ strokeWidth: "3" }} /></Button>
+              <Button onClick={() => handleShapeButtonClick("rhombus")}><CgShapeRhombus /></Button>
             </div>
           </div>
         </div>

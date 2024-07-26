@@ -3,20 +3,69 @@ import { Handle, NodeProps, Position } from 'reactflow'
 import styles from './customNodeComponent.module.css'
 
 const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
-  const nodeShape = data?.nodeShape || '10px'; 
+  const shapeClass = styles[data.shape] || styles.rectangle
+  const shapeColor = styles[data.color] || styles.black
+  const handleClass = data.shape === 'rhombus' ? styles.handleRhombus : ''
+
+  const handleClasses = {
+    top: data.shape === 'rhombus' ? styles.handleRhombusTop : '',
+    rightSource: data.shape === 'rhombus' ? styles.handleRhombusRightSource : styles.handleDefaultRightSource,
+    rightTarget: data.shape === 'rhombus' ? styles.handleRhombusRightTarget : styles.handleDefaultRightTarget,
+    bottom: data.shape === 'rhombus' ? styles.handleRhombusBottom : '',
+    leftSource: data.shape === 'rhombus' ? styles.handleRhombusLeftSource : styles.handleDefaultLeftSource,
+    leftTarget: data.shape === 'rhombus' ? styles.handleRhombusLeftTarget : styles.handleDefaultLeftTarget,
+  }
 
   return (
-    <>
-      <div className={`${styles.customNode} ${nodeShape === 'rhombusShape' ? styles.rhombusShape : ''}`}>
-        <Handle type="target" position={Position.Top} id="top" isConnectable={isConnectable} />
-        <Handle type="source" position={Position.Right} id="right-source" style={{ top: '50%', transform: 'translateY(-50%)' }} isConnectable={isConnectable} />
-        <Handle type="target" position={Position.Right} id="right-target" style={{ top: '50%', transform: 'translateY(-50%)', visibility: 'hidden' }} isConnectable={isConnectable} />
-        <div className={styles.labelContainer}>{data.label}</div>
-        <Handle type="source" position={Position.Bottom} id="bottom" isConnectable={isConnectable} />
-        <Handle type="source" position={Position.Left} id="left-source" style={{ top: '50%', transform: 'translateY(-50%)' }} isConnectable={isConnectable} />
-        <Handle type="target" position={Position.Left} id="left-target" style={{ top: '50%', transform: 'translateY(-50%)', visibility: 'hidden' }} isConnectable={isConnectable} />
+    <div className={`${styles.customNode} ${shapeClass} ${shapeColor}`}>
+      <div
+        className={`${styles.labelContainer} ${data.shape === 'rhombus' ? styles.labelRhombus : ''}`}
+      >
+        {data.label}
       </div>
-    </>
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        isConnectable={isConnectable}
+        className={`${handleClass} ${handleClasses.top}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right-source"
+        isConnectable={isConnectable}
+        className={`${handleClass} ${handleClasses.rightSource}`}
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right-target"
+        isConnectable={isConnectable}
+        className={`${handleClass} ${handleClasses.rightTarget}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom"
+        isConnectable={isConnectable}
+        className={`${handleClass} ${handleClasses.bottom}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
+        isConnectable={isConnectable}
+        className={`${handleClass} ${handleClasses.leftSource}`}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left-target"
+        isConnectable={isConnectable}
+        className={`${handleClass} ${handleClasses.leftTarget}`}
+      />
+    </div>
   )
 }
 
