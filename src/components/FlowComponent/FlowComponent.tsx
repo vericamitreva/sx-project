@@ -140,6 +140,7 @@ const FlowComponent = () => {
       return {
         id: node.id.toString(),
         data: {
+          id: node.id,
           label: node.task_name,
           shape: 'rectangle',
           color: 'black',

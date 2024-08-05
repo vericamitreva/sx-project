@@ -25,6 +25,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
           {data.icon}
         </div>
         <div className={styles.label}>
+          {data.id}<br/>
           {data.label}
         </div>
       </div>
@@ -32,7 +33,8 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
         type="target"
         position={Position.Top}
         id="top"
-        isConnectable={isConnectable}
+        // style={{display: "none"}}
+        isConnectable={false}
         className={`${handleClass} ${handleClasses.top}`}
       />
       {/* <Handle
@@ -53,7 +55,8 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
         type="source"
         position={Position.Bottom}
         id="bottom"
-        isConnectable={isConnectable}
+        isConnectable={false}
+        // style={{display: "none"}}
         className={`${handleClass} ${handleClasses.bottom}`}
       />
       {/* <Handle

@@ -21,7 +21,7 @@
     "task_type": "task",
     "task_module": "ADMINISTRATION",
     "task_order": 3,
-    "start_tasks": [18, 19]
+    "start_tasks": [18,19]
   },
   {
     "id": 18,
