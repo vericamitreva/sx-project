@@ -2,7 +2,7 @@ import React from 'react'
 import { Handle, NodeProps, Position } from 'reactflow'
 import styles from './customNodeComponent.module.css'
 
-const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
+const CustomNodeComponent: React.FC<NodeProps> = ({ data }) => {
   const shapeClass = styles[data.shape] || styles.rectangle
   const shapeColor = styles[data.color] || styles.black
   const handleClass = data.shape === 'rhombus' ? styles.handleRhombus : styles.defaultHandle
