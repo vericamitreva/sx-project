@@ -46,7 +46,7 @@ function App() {
                         search={debouncedSearch}
                         setSearch={setSearch}
                     /> */}
-                <div style={{height: "500px", position: "relative"}}>
+                <div style={{height: "100%", width: "100%", position: "relative"}}>
                 <FlowComponent/>
                 </div>
             </QueryClientProvider>

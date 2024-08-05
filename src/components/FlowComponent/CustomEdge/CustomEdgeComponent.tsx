@@ -1,9 +1,4 @@
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  EdgeProps,
-  getSmoothStepPath,
-} from 'reactflow'
+import { BaseEdge, EdgeProps, getSmoothStepPath } from 'reactflow';
 
 const CustomEdgeComponent = ({
   sourceX,
@@ -15,19 +10,20 @@ const CustomEdgeComponent = ({
   style = {},
   markerEnd,
 }: EdgeProps) => {
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
+  //const [edgePath, labelX, labelY] = getSmoothStepPath({
+  const [edgePath] = getSmoothStepPath({
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
-  })
+  });
 
   return (
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
-      <EdgeLabelRenderer>
+      {/* <EdgeLabelRenderer>
         <div
           style={{
             position: 'absolute',
@@ -39,9 +35,9 @@ const CustomEdgeComponent = ({
         >
           <h5>Label</h5>
         </div>
-      </EdgeLabelRenderer>
+      </EdgeLabelRenderer> */}
     </>
-  )
-}
+  );
+};
 
-export default CustomEdgeComponent
+export default CustomEdgeComponent;

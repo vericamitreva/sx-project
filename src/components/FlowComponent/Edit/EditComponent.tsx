@@ -4,22 +4,16 @@ import { Button } from "antd"
 import { CgShapeRhombus } from "react-icons/cg"
 import { TbOvalVertical } from "react-icons/tb"
 import { LuRectangleHorizontal } from "react-icons/lu"
+import type { EditComponentProps } from "../../../assets/types"
 
-interface EditComponentProps {
-  nodeName: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  setNodeColor: (color: string) => void;
-  setNodeShape: (shape: string) => void;
-}
-
-const EditComponent: React.FC<EditComponentProps> = ({ nodeName, onChange, setNodeColor, setNodeShape }) => {
+const EditComponent: React.FC<EditComponentProps> = ({ nodeName, onChange, nodeData, setNodeData }) => {
 
   const handleColorButtonClick = (color: string) => {
-    setNodeColor(color)
+    setNodeData({...nodeData, color})
   }
 
   const handleShapeButtonClick = (shape: string) => {
-    setNodeShape(shape)
+    setNodeData({...nodeData, shape})
   }
 
   return (

@@ -5,7 +5,7 @@ import styles from './customNodeComponent.module.css'
 const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
   const shapeClass = styles[data.shape] || styles.rectangle
   const shapeColor = styles[data.color] || styles.black
-  const handleClass = data.shape === 'rhombus' ? styles.handleRhombus : ''
+  const handleClass = data.shape === 'rhombus' ? styles.handleRhombus : styles.defaultHandle
 
   const handleClasses = {
     top: data.shape === 'rhombus' ? styles.handleRhombusTop : '',
@@ -17,11 +17,16 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
   }
 
   return (
-    <div className={`${styles.customNode} ${shapeClass} ${shapeColor}`}>
+    <div className={`${styles.customNode} ${shapeClass} ${shapeColor}`} style={{backgroundColor: data.backgroundColor}}>
       <div
         className={`${styles.labelContainer} ${data.shape === 'rhombus' ? styles.labelRhombus : ''}`}
       >
-        {data.label}
+        <div className={styles.icon}>
+          {data.icon}
+        </div>
+        <div className={styles.label}>
+          {data.label}
+        </div>
       </div>
       <Handle
         type="target"
@@ -30,7 +35,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
         isConnectable={isConnectable}
         className={`${handleClass} ${handleClasses.top}`}
       />
-      <Handle
+      {/* <Handle
         type="source"
         position={Position.Right}
         id="right-source"
@@ -43,7 +48,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
         id="right-target"
         isConnectable={isConnectable}
         className={`${handleClass} ${handleClasses.rightTarget}`}
-      />
+      /> */}
       <Handle
         type="source"
         position={Position.Bottom}
@@ -51,7 +56,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
         isConnectable={isConnectable}
         className={`${handleClass} ${handleClasses.bottom}`}
       />
-      <Handle
+      {/* <Handle
         type="source"
         position={Position.Left}
         id="left-source"
@@ -64,7 +69,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data, isConnectable }) => {
         id="left-target"
         isConnectable={isConnectable}
         className={`${handleClass} ${handleClasses.leftTarget}`}
-      />
+      /> */}
     </div>
   )
 }

@@ -18,5 +18,18 @@ interface SelectComponentProps {
     setSearch: (value: string) => void;
     mode?: "multiple" | "tags" | undefined;
 }
+interface NodeData {
+  label: string
+  color: string
+  shape: string
+}
 
-export type { Person, SelectComponentProps } 
+interface EditComponentProps {
+  nodeName: string;
+  nodeData: NodeData;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  setNodeData: (nodeData: NodeData) => void
+}
+
+
+export type { Person, SelectComponentProps, NodeData, EditComponentProps } 
