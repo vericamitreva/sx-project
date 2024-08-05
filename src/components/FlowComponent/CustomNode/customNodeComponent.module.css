@@ -12,9 +12,8 @@
 
 .icon {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 0.4rem;
+  top: -20px;
+  right: -20px;
 } 
 
 /* .icon {
