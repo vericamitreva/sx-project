@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import ReactFlow, {
   Node,
-  Controls,
   MarkerType,
   useNodesState,
   Edge,
@@ -18,6 +17,7 @@ import EditComponent from './Edit/EditComponent'
 import CustomNodeComponent from './CustomNode/CustomNodeComponent.tsx'
 import nodesData from './../../assets/data/data.json'
 import MODULES_ARR from '../../assets/modules.tsx'
+import style from "./flowComponent.module.css"
 
 const nodeTypes = { customNode: CustomNodeComponent }
 const edgeTypes = { customEdge: CustomEdgeComponent }
@@ -189,7 +189,7 @@ const FlowComponent = () => {
           nodes={nodes}
           edges={edges}
           nodesDraggable={false}
-          nodesConnectable={true}
+          nodesConnectable={false}
           onConnect={onConnect}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -199,9 +199,12 @@ const FlowComponent = () => {
           connectionLineStyle={{ strokeWidth: 1, stroke: 'black' }}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          fitView
+          className={style.flow}
+          defaultViewport={
+            { x: 200, y: 0, zoom: 1.5 }
+          }
         >
-          <Controls />
+          {/* <Controls /> */}
         </ReactFlow>
       </div>
       {isEditOpen ? (
