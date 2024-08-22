@@ -20,7 +20,7 @@ interface SelectComponentProps {
 }
 interface NodeData {
   label: string
-  color: string
+  borderColor: string
   shape: string
 }
 

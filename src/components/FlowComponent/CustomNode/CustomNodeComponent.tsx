@@ -4,7 +4,7 @@ import styles from './customNodeComponent.module.css'
 
 const CustomNodeComponent: React.FC<NodeProps> = ({ data }) => {
   const shapeClass = styles[data.shape] || styles.rectangle
-  const shapeColor = styles[data.color] || styles.black
+  const borderColor = styles[data.borderColor] || styles.black
   const handleClass = data.shape === 'rhombus' ? styles.handleRhombus : styles.defaultHandle
 
   const handleClasses = {
@@ -17,7 +17,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data }) => {
   }
 
   return (
-    <div className={`${styles.customNode} ${shapeClass} ${shapeColor}`} style={{backgroundColor: data.backgroundColor}}>
+    <div className={`${styles.customNode} ${shapeClass} ${borderColor}`} style={{backgroundColor: data.backgroundColor}}>
       <div
         className={`${styles.labelContainer} ${data.shape === 'rhombus' ? styles.labelRhombus : ''}`}
       >

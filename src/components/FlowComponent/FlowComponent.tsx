@@ -8,6 +8,8 @@ import ReactFlow, {
   useEdgesState,
   ConnectionLineType,
   Position,
+  PanOnScrollMode,
+  useReactFlow
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { Button } from 'antd'
@@ -62,13 +64,19 @@ const getLayoutedElements = (nodes: CustomNode[], edges: Edge[], direction = 'TB
 }
 
 const FlowComponent = () => {
-  const initialNodeData = { label: 'New Node', shape: 'rectangle', color: 'black' }
+  const initialNodeData = { 
+    label: 'New Node', 
+    shape: 'rectangle', 
+    borderColor: 'black' }
 
   const [nodes, setNodes, onNodesChange] = useNodesState<CustomNode[]>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([])
   const [nodeData, setNodeData] = useState(initialNodeData)
   const [selectedNodeId, setSelectedNodeId] = useState<string>('')
   const [isEditOpen, setIsEditOpen] = useState<boolean>(false)
+  const [containerWidth, setContainerWidth] = useState<number>(0)
+
+  const proOptions = { hideAttribution: true }
 
   const addNewNode = () => {
     const newNode: CustomNode = {
@@ -106,7 +114,7 @@ const FlowComponent = () => {
     setNodeData({
       label: node.data.label,
       shape: node.data.shape,
-      color: node.data.color,
+      borderColor: node.data.borderColor,
     })
     setIsEditOpen(true)
   }
@@ -122,7 +130,7 @@ const FlowComponent = () => {
                 ...node.data,
                 label: nodeData.label,
                 shape: nodeData.shape,
-                color: nodeData.color,
+                borderColor: nodeData.borderColor,
               },
             }
           }
@@ -132,10 +140,12 @@ const FlowComponent = () => {
     }
   }, [nodeData, selectedNodeId])
 
+  const { setViewport, fitView } = useReactFlow()
+
   useEffect(() => {
     const jsonNodes: CustomNode[] = nodesData.map((node) => {
       const module = MODULES_ARR.find((module) => module.name === node.task_module)
-      const icon = MODULES_ARR.find((module) => module.name === node.task_module)?.whiteIcon
+      const icon = MODULES_ARR.find((module) => module.name === node.task_module)?.colorIcon
 
       return {
         id: node.id.toString(),
@@ -143,12 +153,12 @@ const FlowComponent = () => {
           id: node.id,
           label: node.task_name,
           shape: 'rectangle',
-          color: 'black',
+          borderColor: 'black',
           taskModule: node.task_module,
           taskOrder: node.task_order,
           startTasks: node.start_tasks,
           backgroundColor: module ? module.color : '',
-          icon: icon,
+          icon: icon
         },
         style: {
           borderRadius: '5px',
@@ -177,46 +187,63 @@ const FlowComponent = () => {
 
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
-  }, [setNodes, setEdges])
+
+    const graphWidth = (Math.max(...layoutedNodes.map(node => node.position.x)) + Math.min(...layoutedNodes.map(node => node.position.x)))+nodeWidth/2
+    const graphWidthWindow = window.innerWidth < 1240 ? 0.5*graphWidth : 1.5*graphWidth
+
+    setContainerWidth(graphWidthWindow)
+
+    setViewport({ x: 0, y:0, zoom: window.innerWidth < 1240 ? 0.5 : 1.5 })
+    fitView()
+
+  }, [setNodes, setEdges, setViewport])
 
   return (
     <>
-      <Button onClick={addNewNode} style={{ margin: '1rem' }}>
-        ADD NEW NODE
-      </Button>
-      <div style={{ height: '500px' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          onConnect={onConnect}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onPaneClick={() => setIsEditOpen(false)}
-          onNodeClick={(_e, node) => selectNode(node)}
-          connectionLineType={ConnectionLineType.SmoothStep}
-          connectionLineStyle={{ strokeWidth: 1, stroke: 'black' }}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          className={style.flow}
-          defaultViewport={
-            { x: 200, y: 0, zoom: 1.5 }
-          }
-        >
-          {/* <Controls /> */}
-        </ReactFlow>
+      <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+        <div>
+          <Button onClick={addNewNode} style={{ margin: '1rem' }}>
+            ADD NEW NODE
+          </Button>
+        </div>
+        <div style={{position: "relative", height: "100dvh", width: `${containerWidth}px`}}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            onConnect={onConnect}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onPaneClick={() => setIsEditOpen(false)}
+            onNodeClick={(_e, node) => selectNode(node)}
+            connectionLineType={ConnectionLineType.SmoothStep}
+            connectionLineStyle={{ strokeWidth: 1, stroke: 'black' }}
+            panOnScroll={false}
+            panOnDrag={false}
+            preventScrolling={false}
+            panOnScrollMode={PanOnScrollMode.Vertical}
+            zoomOnScroll={false}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            proOptions={proOptions}
+            className={style.flow}
+            color='white'
+          >
+            {/* <Controls /> */}
+          </ReactFlow>
+        </div>
+        {isEditOpen ? (
+          <EditComponent
+            nodeName={nodeData.label}
+            onChange={(e) => setNodeData((prev) => ({ ...prev, label: e.target.value }))}
+            nodeData={nodeData}
+            setNodeData={setNodeData}
+          />
+        ) : (
+          ''
+        )}
       </div>
-      {isEditOpen ? (
-        <EditComponent
-          nodeName={nodeData.label}
-          onChange={(e) => setNodeData((prev) => ({ ...prev, label: e.target.value }))}
-          nodeData={nodeData}
-          setNodeData={setNodeData}
-        />
-      ) : (
-        ''
-      )}
     </>
   )
 }

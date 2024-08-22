@@ -8,8 +8,8 @@ import type { EditComponentProps } from "../../../assets/types"
 
 const EditComponent: React.FC<EditComponentProps> = ({ nodeName, onChange, nodeData, setNodeData }) => {
 
-  const handleColorButtonClick = (color: string) => {
-    setNodeData({...nodeData, color})
+  const handleColorButtonClick = (borderColor: string) => {
+    setNodeData({...nodeData, borderColor})
   }
 
   const handleShapeButtonClick = (shape: string) => {

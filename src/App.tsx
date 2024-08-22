@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 // import { Person } from "./assets/types"
 // import useDebounce from "./assets/useDebounce"
 import FlowComponent from './components/FlowComponent/FlowComponent'
+import { ReactFlowProvider } from 'reactflow'
 
 const queryClient = new QueryClient()
 
@@ -46,8 +47,11 @@ function App() {
                         search={debouncedSearch}
                         setSearch={setSearch}
                     /> */}
-                <div style={{height: "100%", width: "100%", position: "relative"}}>
-                <FlowComponent/>
+                {/* <div style={{height: "100%", width: "100%", position: "relative"}}> */}
+                <div style={{ height: '100dvh', width: '100vw'}}>
+                    <ReactFlowProvider>
+                        <FlowComponent />
+                    </ReactFlowProvider>
                 </div>
             </QueryClientProvider>
         </>
