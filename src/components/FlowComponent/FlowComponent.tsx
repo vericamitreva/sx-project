@@ -79,15 +79,20 @@ const FlowComponent = () => {
   const proOptions = { hideAttribution: true }
 
   const addNewNode = () => {
+    const maxId = nodes.length > 0 ? Math.max(...nodes.map((node) => parseInt(node.id))) : 0
+    const newNodeId = (maxId+1).toString()
+
+    console.log(newNodeId)
+
     const newNode: CustomNode = {
-      id: (nodes.length + 1).toString(),
+      id: newNodeId,
       data: nodeData,
       position: {
         x: nodes.length * 20,
         y: nodes.length * 20,
       },
       style: {},
-      type: 'customNode',
+      type: 'customNode'
     }
 
     setNodes((prev) => [...prev, newNode])
@@ -155,7 +160,6 @@ const FlowComponent = () => {
           shape: 'rectangle',
           borderColor: 'black',
           taskModule: node.task_module,
-          taskOrder: node.task_order,
           startTasks: node.start_tasks,
           backgroundColor: module ? module.color : '',
           icon: icon
@@ -224,6 +228,8 @@ const FlowComponent = () => {
             preventScrolling={false}
             panOnScrollMode={PanOnScrollMode.Vertical}
             zoomOnScroll={false}
+            zoomOnPinch={false}
+            zoomOnDoubleClick={false}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             proOptions={proOptions}
