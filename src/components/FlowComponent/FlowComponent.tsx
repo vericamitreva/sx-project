@@ -65,9 +65,14 @@ const getLayoutedElements = (nodes: CustomNode[], edges: Edge[], direction = 'TB
 
 const FlowComponent = () => {
   const initialNodeData = { 
+    id: '',
     label: 'New Node', 
     shape: 'rectangle', 
-    borderColor: 'black' }
+    borderColor: 'black',
+    taskModule: '',
+    startTasks: [] as number[],
+    backgroundColor: ''
+  }
 
   const [nodes, setNodes, onNodesChange] = useNodesState<CustomNode[]>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([])
@@ -78,6 +83,58 @@ const FlowComponent = () => {
 
   const proOptions = { hideAttribution: true }
 
+  const fetchNodes = () : Promise<CustomNode[]> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(getNodesFromStorage())
+      }, 1000)
+    })
+  }
+
+  const fetchEdges = () : Promise<Edge[]> => {
+     return new Promise((resolve) => {
+       setTimeout(() => {
+         resolve(getEdgesFromStorage())
+       }, 1000)
+     })
+  }
+
+  const saveNodesToStorage = (nodes: CustomNode[]) => {
+    localStorage.setItem("nodes", JSON.stringify(nodes))
+  }
+
+  const saveEdgesToStorage = (edges: Edge[]) => {
+    localStorage.setItem("edges", JSON.stringify(edges))
+  }
+
+  const getNodesFromStorage = () => {
+    const nodes = localStorage.getItem("nodes")
+    return nodes ? JSON.parse(nodes) : []
+  }
+
+  const getEdgesFromStorage = () => {
+    const edges = localStorage.getItem("edges")
+    return edges ? JSON.parse(edges) : []
+  }
+
+  const saveNodes = (nodes: CustomNode[]) : Promise<void> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        saveNodesToStorage(nodes)
+        resolve()
+      }, 1000)
+    })
+  }
+
+  const saveEdges = (edges: Edge[]) : Promise<void> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        saveEdgesToStorage(edges)
+        resolve()
+      }, 1000)
+    })
+  }
+
   const addNewNode = () => {
     const maxId = nodes.length > 0 ? Math.max(...nodes.map((node) => parseInt(node.id))) : 0
     const newNodeId = (maxId+1).toString()
@@ -86,16 +143,47 @@ const FlowComponent = () => {
 
     const newNode: CustomNode = {
       id: newNodeId,
-      data: nodeData,
-      position: {
-        x: nodes.length * 20,
-        y: nodes.length * 20,
+      data: {
+        id: newNodeId,
+        label: "New Node",
+        shape: "rectangle",
+        borderColor: "black",
+        taskModule: "",
+        startTasks: [parseInt(newNodeId)+1],
+        backgroundColor: ""
       },
-      style: {},
+      style: {
+        borderRadius: '5px',
+      },
+      position: { x: 0, y: 0 }, 
       type: 'customNode'
     }
 
-    setNodes((prev) => [...prev, newNode])
+    console.log(newNode.data.startTasks)
+
+    const updatedNodes = [...nodes, newNode]
+    saveNodes(updatedNodes) 
+
+    const newEdge: Edge = {
+      id: `${newNodeId}-${newNode.data.startTasks[0]}`,
+      source: (parseInt(newNodeId)-1).toString(),
+      target: newNodeId,
+      type: "customEdge",
+      markerEnd: { type: MarkerType.Arrow, color: 'black' },
+      style: { strokeWidth: 1, stroke: 'black' },
+    }
+
+    const updatedEdges = [...edges, newEdge]
+    saveEdges(updatedEdges)
+
+    const {nodes: layoutedNodes, edges: layoutedEdges} = getLayoutedElements(
+      updatedNodes,
+      updatedEdges,
+      "TB"
+    )
+
+    setNodes(layoutedNodes)
+    setEdges(layoutedEdges)
   }
 
   const onConnect = useCallback(
@@ -111,15 +199,19 @@ const FlowComponent = () => {
           edges
         )
       ),
-    []
+    [edges]
   )
 
   const selectNode = (node: CustomNode) => {
     setSelectedNodeId(node.id)
     setNodeData({
+      id: node.data.id,
       label: node.data.label,
       shape: node.data.shape,
       borderColor: node.data.borderColor,
+      taskModule: node.data.taskModule,
+      startTasks: node.data.startTasks,
+      backgroundColor: node.data.backgroundColor
     })
     setIsEditOpen(true)
   }
@@ -136,6 +228,9 @@ const FlowComponent = () => {
                 label: nodeData.label,
                 shape: nodeData.shape,
                 borderColor: nodeData.borderColor,
+                taskModule: nodeData.taskModule,
+                startTasks: nodeData.startTasks,
+                backgroundColor: nodeData.backgroundColor
               },
             }
           }
@@ -143,11 +238,16 @@ const FlowComponent = () => {
         })
       )
     }
-  }, [nodeData, selectedNodeId])
+  }, [nodeData, selectedNodeId, setNodes])
 
   const { setViewport, fitView } = useReactFlow()
 
   useEffect(() => {
+    const fetchData = async () => {
+
+    const storedNodes = await fetchNodes()
+    const storedEdges = await fetchEdges()
+
     const jsonNodes: CustomNode[] = nodesData.map((node) => {
       const module = MODULES_ARR.find((module) => module.name === node.task_module)
       const icon = MODULES_ARR.find((module) => module.name === node.task_module)?.colorIcon
@@ -172,6 +272,8 @@ const FlowComponent = () => {
       }
     })
 
+    const allNodes = Array.from(new Map([...storedNodes, ...jsonNodes].map((node) => [node.id, node])).values())
+
     const jsonEdges: Edge[] = nodesData.flatMap((node) =>
       node.start_tasks.map((startTask) => ({
         id: `${node.id}-${startTask}`,
@@ -183,28 +285,46 @@ const FlowComponent = () => {
       }))
     )
 
+    const allEdges = Array.from(new Map([...storedEdges, ...jsonEdges].map((edge) => [edge.id, edge])).values())
+
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-      jsonNodes,
-      jsonEdges,
+      allNodes,
+      allEdges,
       'TB'
     )
 
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
 
-    const graphWidth = (Math.max(...layoutedNodes.map(node => node.position.x)) + Math.min(...layoutedNodes.map(node => node.position.x)))+nodeWidth/2
-    const graphWidthWindow = window.innerWidth < 1240 ? 0.5*graphWidth : 1.5*graphWidth
+    saveNodes(layoutedNodes)
+    saveEdges(layoutedEdges)
 
-    setContainerWidth(graphWidthWindow)
+    const updateViewport = () => {
+      const graphWidth = (Math.max(...layoutedNodes.map(node => node.position.x)) + Math.min(...layoutedNodes.map(node => node.position.x)))+nodeWidth/2
+      const graphWidthWindow = window.innerWidth < 1240 ? 0.5*graphWidth : 1.5*graphWidth
+  
+      setContainerWidth(graphWidthWindow)
+  
+      setViewport({ x: 0, y:0, zoom: window.innerWidth < 1240 ? 0.5 : 1.5 })
+      fitView()
+    }
 
-    setViewport({ x: 0, y:0, zoom: window.innerWidth < 1240 ? 0.5 : 1.5 })
-    fitView()
+    window.addEventListener("resize", updateViewport)
+    updateViewport()
 
-  }, [setNodes, setEdges, setViewport])
+    return () => window.removeEventListener("resize", updateViewport)
+
+  }
+
+  fetchData()
+
+  }, [setNodes, setEdges, setViewport, fitView])
+
+  console.log(nodes)
 
   return (
     <>
-      <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+      <div style={{position: "relative", display: "flex", flexDirection: "column", alignItems: "center"}}>
         <div>
           <Button onClick={addNewNode} style={{ margin: '1rem' }}>
             ADD NEW NODE

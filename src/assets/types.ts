@@ -19,14 +19,18 @@ interface SelectComponentProps {
     mode?: "multiple" | "tags" | undefined;
 }
 interface NodeData {
+  id: string
   label: string
   borderColor: string
   shape: string
+  taskModule: string
+  startTasks: number[]
+  backgroundColor: string
 }
 
 interface EditComponentProps {
-  nodeName: string;
-  nodeData: NodeData;
+  nodeName: string
+  nodeData: NodeData
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
   setNodeData: (nodeData: NodeData) => void
 }
