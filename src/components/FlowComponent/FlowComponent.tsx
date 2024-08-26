@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import ReactFlow, {
-  Node,
   MarkerType,
   useNodesState,
   Edge,
@@ -20,11 +19,11 @@ import CustomNodeComponent from './CustomNode/CustomNodeComponent.tsx'
 import nodesData from './../../assets/data/data.json'
 import MODULES_ARR from '../../assets/modules.tsx'
 import style from "./flowComponent.module.css"
+import type { CustomNode, TaskType } from '../../assets/types.ts'
+import { fetchEdges, fetchNodes, saveNodes, saveEdges } from './DataOperations/dataOperations.tsx'
 
 const nodeTypes = { customNode: CustomNodeComponent }
 const edgeTypes = { customEdge: CustomEdgeComponent }
-
-interface CustomNode extends Node {}
 
 const dagreGraph = new dagre.graphlib.Graph()
 dagreGraph.setDefaultEdgeLabel(() => ({}))
@@ -32,7 +31,8 @@ dagreGraph.setDefaultEdgeLabel(() => ({}))
 const nodeWidth = 150
 const nodeHeight = 60
 
-const getLayoutedElements = (nodes: CustomNode[], edges: Edge[], direction = 'TB') => {
+const getLayoutedElements = (nodes: CustomNode[], edges: Edge[], direction = 'TB') : 
+{ nodes: CustomNode[]; edges: Edge[] } => {
   dagreGraph.setGraph({ rankdir: direction })
 
   nodes.forEach((node) => {
@@ -45,36 +45,45 @@ const getLayoutedElements = (nodes: CustomNode[], edges: Edge[], direction = 'TB
 
   dagre.layout(dagreGraph)
 
-  const newNodes = nodes.map((node) => {
+  const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id)
-    const newNode = {
+    const layoutedNode : CustomNode = {
       ...node,
       targetPosition: Position.Top,
       sourcePosition: Position.Bottom,
       position: {
         x: nodeWithPosition.x - nodeWidth / 2,
-        y: nodeWithPosition.y - nodeHeight / 2,
-      },
+        y: nodeWithPosition.y - nodeHeight / 2
+      }
     }
 
-    return newNode
+    return layoutedNode
   })
 
-  return { nodes: newNodes, edges }
+  return { nodes: layoutedNodes, edges }
 }
 
 const FlowComponent = () => {
-  const initialNodeData = { 
+  
+  const initialNodeData = {
     id: '',
-    label: 'New Node', 
-    shape: 'rectangle', 
+    label: 'New Node',
+    shape: 'rectangle',
     borderColor: 'black',
     taskModule: '',
     startTasks: [] as number[],
-    backgroundColor: ''
+    backgroundColor: '',
+    taskName: '',
+    taskType: 'task' as TaskType,
+    attachmentType: '',
+    hasAttachment: false,
+    timeToCompleteInDays: 0,
+    taskOrder: 0,
+    responsibleUser: [] as number[],
+    responsibleGroup: [] as number[],
   }
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<CustomNode[]>([])
+  const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([])
   const [nodeData, setNodeData] = useState(initialNodeData)
   const [selectedNodeId, setSelectedNodeId] = useState<string>('')
@@ -83,86 +92,44 @@ const FlowComponent = () => {
 
   const proOptions = { hideAttribution: true }
 
-  const fetchNodes = () : Promise<CustomNode[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(getNodesFromStorage())
-      }, 1000)
-    })
-  }
-
-  const fetchEdges = () : Promise<Edge[]> => {
-     return new Promise((resolve) => {
-       setTimeout(() => {
-         resolve(getEdgesFromStorage())
-       }, 1000)
-     })
-  }
-
-  const saveNodesToStorage = (nodes: CustomNode[]) => {
-    localStorage.setItem("nodes", JSON.stringify(nodes))
-  }
-
-  const saveEdgesToStorage = (edges: Edge[]) => {
-    localStorage.setItem("edges", JSON.stringify(edges))
-  }
-
-  const getNodesFromStorage = () => {
-    const nodes = localStorage.getItem("nodes")
-    return nodes ? JSON.parse(nodes) : []
-  }
-
-  const getEdgesFromStorage = () => {
-    const edges = localStorage.getItem("edges")
-    return edges ? JSON.parse(edges) : []
-  }
-
-  const saveNodes = (nodes: CustomNode[]) : Promise<void> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        saveNodesToStorage(nodes)
-        resolve()
-      }, 1000)
-    })
-  }
-
-  const saveEdges = (edges: Edge[]) : Promise<void> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        saveEdgesToStorage(edges)
-        resolve()
-      }, 1000)
-    })
-  }
-
   const addNewNode = () => {
     const maxId = nodes.length > 0 ? Math.max(...nodes.map((node) => parseInt(node.id))) : 0
     const newNodeId = (maxId+1).toString()
 
     console.log(newNodeId)
 
+    const newNodeData = {
+      id: newNodeId,
+      label: 'New Node',
+      shape: 'rectangle',
+      borderColor: 'black',
+      taskModule: '',
+      startTasks: [parseInt(newNodeId) + 1],
+      backgroundColor: '',
+      taskName: '', 
+      taskType: 'task' as TaskType, 
+      attachmentType: '', 
+      hasAttachment: false, 
+      timeToCompleteInDays: 0,
+      taskOrder: 0, 
+      responsibleUser: [],
+      responsibleGroup: [],
+    }
+
     const newNode: CustomNode = {
       id: newNodeId,
-      data: {
-        id: newNodeId,
-        label: "New Node",
-        shape: "rectangle",
-        borderColor: "black",
-        taskModule: "",
-        startTasks: [parseInt(newNodeId)+1],
-        backgroundColor: ""
-      },
+      data: newNodeData,
       style: {
         borderRadius: '5px',
       },
       position: { x: 0, y: 0 }, 
-      type: 'customNode'
+      type: 'customNode',
     }
 
     console.log(newNode.data.startTasks)
 
-    const updatedNodes = [...nodes, newNode]
-    saveNodes(updatedNodes) 
+    const updatedNodes = [...nodes, newNode as CustomNode]
+    saveNodes(updatedNodes as CustomNode[]) 
 
     const newEdge: Edge = {
       id: `${newNodeId}-${newNode.data.startTasks[0]}`,
@@ -177,7 +144,7 @@ const FlowComponent = () => {
     saveEdges(updatedEdges)
 
     const {nodes: layoutedNodes, edges: layoutedEdges} = getLayoutedElements(
-      updatedNodes,
+      updatedNodes as CustomNode[],
       updatedEdges,
       "TB"
     )
@@ -204,15 +171,7 @@ const FlowComponent = () => {
 
   const selectNode = (node: CustomNode) => {
     setSelectedNodeId(node.id)
-    setNodeData({
-      id: node.data.id,
-      label: node.data.label,
-      shape: node.data.shape,
-      borderColor: node.data.borderColor,
-      taskModule: node.data.taskModule,
-      startTasks: node.data.startTasks,
-      backgroundColor: node.data.backgroundColor
-    })
+    setNodeData(node.data)
     setIsEditOpen(true)
   }
 
@@ -223,15 +182,7 @@ const FlowComponent = () => {
           if (node.id === selectedNodeId) {
             return {
               ...node,
-              data: {
-                ...node.data,
-                label: nodeData.label,
-                shape: nodeData.shape,
-                borderColor: nodeData.borderColor,
-                taskModule: nodeData.taskModule,
-                startTasks: nodeData.startTasks,
-                backgroundColor: nodeData.backgroundColor
-              },
+              data: nodeData
             }
           }
           return node
@@ -255,14 +206,22 @@ const FlowComponent = () => {
       return {
         id: node.id.toString(),
         data: {
-          id: node.id,
+          id: node.id.toString(),
           label: node.task_name,
           shape: 'rectangle',
           borderColor: 'black',
           taskModule: node.task_module,
           startTasks: node.start_tasks,
           backgroundColor: module ? module.color : '',
-          icon: icon
+          icon: icon,
+          taskName: node.task_name, 
+          taskType: node.task_type as TaskType,
+          attachmentType: '',
+          hasAttachment: false,
+          timeToCompleteInDays: 0,
+          taskOrder: node.task_order,
+          responsibleUser: [],
+          responsibleGroup: [],
         },
         style: {
           borderRadius: '5px',
@@ -272,7 +231,7 @@ const FlowComponent = () => {
       }
     })
 
-    const allNodes = Array.from(new Map([...storedNodes, ...jsonNodes].map((node) => [node.id, node])).values())
+    const allNodes: CustomNode[] = Array.from(new Map([...storedNodes, ...jsonNodes].map((node) => [node.id, node as CustomNode])).values())
 
     const jsonEdges: Edge[] = nodesData.flatMap((node) =>
       node.start_tasks.map((startTask) => ({
@@ -304,9 +263,9 @@ const FlowComponent = () => {
       const graphWidthWindow = window.innerWidth < 1240 ? 0.5*graphWidth : 1.5*graphWidth
   
       setContainerWidth(graphWidthWindow)
-  
-      setViewport({ x: 0, y:0, zoom: window.innerWidth < 1240 ? 0.5 : 1.5 })
+
       fitView()
+      setViewport({ x: 0, y:0, zoom: window.innerWidth < 1240 ? 0.5 : 1.5 })
     }
 
     window.addEventListener("resize", updateViewport)
@@ -324,8 +283,8 @@ const FlowComponent = () => {
 
   return (
     <>
-      <div style={{position: "relative", display: "flex", flexDirection: "column", alignItems: "center"}}>
-        <div>
+      <div style={{position: "relative", display: "flex", flexDirection: "column", alignItems: "center"}} onClick={() => (setIsEditOpen(false))}>
+        <div onClick={(e) => {e.stopPropagation()}}>
           <Button onClick={addNewNode} style={{ margin: '1rem' }}>
             ADD NEW NODE
           </Button>
@@ -339,8 +298,9 @@ const FlowComponent = () => {
             onConnect={onConnect}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            onClick={(e) => {e.stopPropagation()}}
             onPaneClick={() => setIsEditOpen(false)}
-            onNodeClick={(_e, node) => selectNode(node)}
+            onNodeClick={(_e, node) => selectNode(node as CustomNode)}
             connectionLineType={ConnectionLineType.SmoothStep}
             connectionLineStyle={{ strokeWidth: 1, stroke: 'black' }}
             panOnScroll={false}
