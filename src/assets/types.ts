@@ -1,31 +1,8 @@
-import { Node } from "reactflow";
+import { Node, Position } from "reactflow";
 interface Person {
   id: string;
   firstName: string;
   lastName: string;
-}
-
-interface CustomNode extends Node<NodeData> {
-  id: string;
-  data: NodeData;
-  position: { x: number; y: number };
-  style: object;
-  type: string;
-}
-
-interface SelectComponentProps {
-  showSearch: boolean;
-  placeholder: string;
-  notFoundContent: string;
-  filterOption: boolean;
-  className: string;
-  value?: string;
-  strValue?: string;
-  onChange: (value: string) => void;
-  useQueryFunction: (search: string, page: number) => Promise<Person[]>;
-  search: string;
-  setSearch: (value: string) => void;
-  mode?: "multiple" | "tags" | undefined;
 }
 
 export type TaskType = "task" | "condition"
@@ -45,14 +22,44 @@ interface NodeData {
   taskOrder: number;
   responsibleUser: number[];
   responsibleGroup: number[];
-  icon?: any;
+  icon?: React.ReactNode
+}
+interface CustomNode extends Node {
+  id: string;
+  data: NodeData;
+  position: { x: number; y: number };
+  style: object;
+  type: string;
+  sourcePosition?: Position | undefined
+  targetPosition?: Position | undefined
+  height?: number
+  width?: number
+  selected?: boolean
+
+}
+
+interface SelectComponentProps {
+  showSearch: boolean;
+  placeholder: string;
+  notFoundContent: string;
+  filterOption: boolean;
+  className: string;
+  value?: string;
+  strValue?: string;
+  onChange: (value: string) => void;
+  useQueryFunction: (search: string, page: number) => Promise<Person[]>;
+  search: string;
+  setSearch: (value: string) => void;
+  mode?: "multiple" | "tags" | undefined;
 }
 
 interface EditComponentProps {
   nodeName: string
   nodeData: NodeData
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  setNodeData: (nodeData: NodeData) => void
+  nodes: Node[]
+  setNodes: (update: (prev: Node[]) => Node[]) => void
+  setNodeData: (update: (prev: NodeData) => NodeData) => void
+  selectedNodeId: string
 }
 
 export type { Person, CustomNode, SelectComponentProps, NodeData, EditComponentProps } 

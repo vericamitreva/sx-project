@@ -6,7 +6,8 @@ const saveNodes = (nodes: CustomNode[]) : Promise<void> => {
       setTimeout(() => {
         saveNodesToStorage(nodes)
         resolve()
-      }, 1000)
+      }, 10)
+      console.log("Saving Nodes:", nodes)
     })
 }
 
@@ -15,7 +16,7 @@ const saveEdges = (edges: Edge[]) : Promise<void> => {
         setTimeout(() => {
         saveEdgesToStorage(edges)
         resolve()
-        }, 1000)
+        }, 10)
     })
 }
 

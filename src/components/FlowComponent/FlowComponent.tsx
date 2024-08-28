@@ -6,62 +6,22 @@ import ReactFlow, {
   addEdge,
   useEdgesState,
   ConnectionLineType,
-  Position,
   PanOnScrollMode,
   useReactFlow
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { Button } from 'antd'
-import dagre from 'dagre'
 import CustomEdgeComponent from './CustomEdge/CustomEdgeComponent.tsx'
-import EditComponent from './Edit/EditComponent'
+import EditComponent from './Edit/EditComponent.tsx'
 import CustomNodeComponent from './CustomNode/CustomNodeComponent.tsx'
-import nodesData from './../../assets/data/data.json'
-import MODULES_ARR from '../../assets/modules.tsx'
 import style from "./flowComponent.module.css"
-import type { CustomNode, TaskType } from '../../assets/types.ts'
-import { fetchEdges, fetchNodes, saveNodes, saveEdges } from './DataOperations/dataOperations.tsx'
+import type { CustomNode, NodeData, TaskType } from '../../assets/types.ts'
+import { saveNodes} from './DataOperations/dataOperations.tsx'
+import { addNewNode } from './AddNewNode/addNewNode.tsx'
+import { fetchFlowData } from './FetchFlowData/fetchFlowData.tsx'
 
 const nodeTypes = { customNode: CustomNodeComponent }
 const edgeTypes = { customEdge: CustomEdgeComponent }
-
-const dagreGraph = new dagre.graphlib.Graph()
-dagreGraph.setDefaultEdgeLabel(() => ({}))
-
-const nodeWidth = 150
-const nodeHeight = 60
-
-const getLayoutedElements = (nodes: CustomNode[], edges: Edge[], direction = 'TB') : 
-{ nodes: CustomNode[]; edges: Edge[] } => {
-  dagreGraph.setGraph({ rankdir: direction })
-
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight })
-  })
-
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target)
-  })
-
-  dagre.layout(dagreGraph)
-
-  const layoutedNodes = nodes.map((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id)
-    const layoutedNode : CustomNode = {
-      ...node,
-      targetPosition: Position.Top,
-      sourcePosition: Position.Bottom,
-      position: {
-        x: nodeWithPosition.x - nodeWidth / 2,
-        y: nodeWithPosition.y - nodeHeight / 2
-      }
-    }
-
-    return layoutedNode
-  })
-
-  return { nodes: layoutedNodes, edges }
-}
 
 const FlowComponent = () => {
   
@@ -70,9 +30,9 @@ const FlowComponent = () => {
     label: 'New Node',
     shape: 'rectangle',
     borderColor: 'black',
-    taskModule: '',
+    taskModule: "",
     startTasks: [] as number[],
-    backgroundColor: '',
+    backgroundColor: "",
     taskName: '',
     taskType: 'task' as TaskType,
     attachmentType: '',
@@ -81,76 +41,23 @@ const FlowComponent = () => {
     taskOrder: 0,
     responsibleUser: [] as number[],
     responsibleGroup: [] as number[],
+    icon: ""
   }
 
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([])
-  const [nodeData, setNodeData] = useState(initialNodeData)
+  const [nodeData, setNodeData] = useState<NodeData>(initialNodeData)
   const [selectedNodeId, setSelectedNodeId] = useState<string>('')
   const [isEditOpen, setIsEditOpen] = useState<boolean>(false)
   const [containerWidth, setContainerWidth] = useState<number>(0)
 
   const proOptions = { hideAttribution: true }
+  const { setViewport, fitView } = useReactFlow()
 
-  const addNewNode = () => {
-    const maxId = nodes.length > 0 ? Math.max(...nodes.map((node) => parseInt(node.id))) : 0
-    const newNodeId = (maxId+1).toString()
+  //localStorage.clear()
 
-    console.log(newNodeId)
-
-    const newNodeData = {
-      id: newNodeId,
-      label: 'New Node',
-      shape: 'rectangle',
-      borderColor: 'black',
-      taskModule: '',
-      startTasks: [parseInt(newNodeId) + 1],
-      backgroundColor: '',
-      taskName: '', 
-      taskType: 'task' as TaskType, 
-      attachmentType: '', 
-      hasAttachment: false, 
-      timeToCompleteInDays: 0,
-      taskOrder: 0, 
-      responsibleUser: [],
-      responsibleGroup: [],
-    }
-
-    const newNode: CustomNode = {
-      id: newNodeId,
-      data: newNodeData,
-      style: {
-        borderRadius: '5px',
-      },
-      position: { x: 0, y: 0 }, 
-      type: 'customNode',
-    }
-
-    console.log(newNode.data.startTasks)
-
-    const updatedNodes = [...nodes, newNode as CustomNode]
-    saveNodes(updatedNodes as CustomNode[]) 
-
-    const newEdge: Edge = {
-      id: `${newNodeId}-${newNode.data.startTasks[0]}`,
-      source: (parseInt(newNodeId)-1).toString(),
-      target: newNodeId,
-      type: "customEdge",
-      markerEnd: { type: MarkerType.Arrow, color: 'black' },
-      style: { strokeWidth: 1, stroke: 'black' },
-    }
-
-    const updatedEdges = [...edges, newEdge]
-    saveEdges(updatedEdges)
-
-    const {nodes: layoutedNodes, edges: layoutedEdges} = getLayoutedElements(
-      updatedNodes as CustomNode[],
-      updatedEdges,
-      "TB"
-    )
-
-    setNodes(layoutedNodes)
-    setEdges(layoutedEdges)
+  const handleAddNewNode = () => {
+    addNewNode(nodes as CustomNode[], setNodes, edges, setEdges, initialNodeData)
   }
 
   const onConnect = useCallback(
@@ -176,117 +83,53 @@ const FlowComponent = () => {
   }
 
   useEffect(() => {
-    if (selectedNodeId) {
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === selectedNodeId) {
-            return {
-              ...node,
-              data: nodeData
-            }
-          }
-          return node
-        })
-      )
-    }
-  }, [nodeData, selectedNodeId, setNodes])
-
-  const { setViewport, fitView } = useReactFlow()
-
-  useEffect(() => {
-    const fetchData = async () => {
-
-    const storedNodes = await fetchNodes()
-    const storedEdges = await fetchEdges()
-
-    const jsonNodes: CustomNode[] = nodesData.map((node) => {
-      const module = MODULES_ARR.find((module) => module.name === node.task_module)
-      const icon = MODULES_ARR.find((module) => module.name === node.task_module)?.colorIcon
-
-      return {
-        id: node.id.toString(),
-        data: {
-          id: node.id.toString(),
-          label: node.task_name,
-          shape: 'rectangle',
-          borderColor: 'black',
-          taskModule: node.task_module,
-          startTasks: node.start_tasks,
-          backgroundColor: module ? module.color : '',
-          icon: icon,
-          taskName: node.task_name, 
-          taskType: node.task_type as TaskType,
-          attachmentType: '',
-          hasAttachment: false,
-          timeToCompleteInDays: 0,
-          taskOrder: node.task_order,
-          responsibleUser: [],
-          responsibleGroup: [],
-        },
-        style: {
-          borderRadius: '5px',
-        },
-        position: { x: 0, y: 0 },
-        type: 'customNode',
-      }
-    })
-
-    const allNodes: CustomNode[] = Array.from(new Map([...storedNodes, ...jsonNodes].map((node) => [node.id, node as CustomNode])).values())
-
-    const jsonEdges: Edge[] = nodesData.flatMap((node) =>
-      node.start_tasks.map((startTask) => ({
-        id: `${node.id}-${startTask}`,
-        source: node.id.toString(),
-        target: startTask.toString(),
-        type: 'customEdge',
-        markerEnd: { type: MarkerType.Arrow, color: 'black' },
-        style: { strokeWidth: 1, stroke: 'black' },
-      }))
+    fetchFlowData(
+      setNodes,
+      setEdges,
+      setViewport,
+      fitView,
+      setContainerWidth
     )
-
-    const allEdges = Array.from(new Map([...storedEdges, ...jsonEdges].map((edge) => [edge.id, edge])).values())
-
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-      allNodes,
-      allEdges,
-      'TB'
-    )
-
-    setNodes(layoutedNodes)
-    setEdges(layoutedEdges)
-
-    saveNodes(layoutedNodes)
-    saveEdges(layoutedEdges)
-
-    const updateViewport = () => {
-      const graphWidth = (Math.max(...layoutedNodes.map(node => node.position.x)) + Math.min(...layoutedNodes.map(node => node.position.x)))+nodeWidth/2
-      const graphWidthWindow = window.innerWidth < 1240 ? 0.5*graphWidth : 1.5*graphWidth
-  
-      setContainerWidth(graphWidthWindow)
-
-      fitView()
-      setViewport({ x: 0, y:0, zoom: window.innerWidth < 1240 ? 0.5 : 1.5 })
-    }
-
-    window.addEventListener("resize", updateViewport)
-    updateViewport()
-
-    return () => window.removeEventListener("resize", updateViewport)
-
-  }
-
-  fetchData()
-
   }, [setNodes, setEdges, setViewport, fitView])
 
-  console.log(nodes)
+  useEffect(() => {
+    const updateNode = async () => {
+      if (selectedNodeId) {
+        const updatedNodes = nodes.map((node) =>
+          node.id === selectedNodeId
+            ? { ...node, data: { ...node.data, ...nodeData } }
+            : node
+        )
+
+        setNodes(updatedNodes)
+        await saveNodes(updatedNodes as CustomNode[])
+        //await fetchNodes()
+        console.log("Updated Nodes", updatedNodes)
+      }
+    }
+
+    updateNode()
+
+    console.log("Selected Node ID:", selectedNodeId)
+    console.log("Node Data:", nodeData)
+
+  }, [nodeData])
+
+  const handleButtonClick = () => {
+    localStorage.clear()
+  }
+
+  //console.log(nodes)
 
   return (
     <>
       <div style={{position: "relative", display: "flex", flexDirection: "column", alignItems: "center"}} onClick={() => (setIsEditOpen(false))}>
         <div onClick={(e) => {e.stopPropagation()}}>
-          <Button onClick={addNewNode} style={{ margin: '1rem' }}>
+          <Button onClick={handleAddNewNode} style={{ margin: '1rem' }}>
             ADD NEW NODE
+          </Button>
+          <Button onClick={handleButtonClick}>
+            CLEAR LOCAL STORAGE
           </Button>
         </div>
         <div style={{position: "relative", height: "100dvh", width: `${containerWidth}px`}}>
@@ -322,9 +165,11 @@ const FlowComponent = () => {
         {isEditOpen ? (
           <EditComponent
             nodeName={nodeData.label}
-            onChange={(e) => setNodeData((prev) => ({ ...prev, label: e.target.value }))}
             nodeData={nodeData}
             setNodeData={setNodeData}
+            nodes={nodes}
+            setNodes={setNodes}
+            selectedNodeId={selectedNodeId} 
           />
         ) : (
           ''

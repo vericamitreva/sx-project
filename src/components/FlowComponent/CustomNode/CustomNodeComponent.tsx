@@ -1,6 +1,7 @@
 import React from 'react'
 import { Handle, NodeProps, Position } from 'reactflow'
 import styles from './customNodeComponent.module.css'
+import { getModuleIcon } from '../GetModuleIcon/getModuleIcon'
 
 const CustomNodeComponent: React.FC<NodeProps> = ({ data }) => {
   const shapeClass = styles[data.shape] || styles.rectangle
@@ -22,7 +23,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data }) => {
         className={`${styles.labelContainer} ${data.shape === 'rhombus' ? styles.labelRhombus : ''}`}
       >
         <div className={styles.icon}>
-          {data.icon}
+          {getModuleIcon(data.icon)}
         </div>
         <div className={styles.label}>
           {data.id}<br/>

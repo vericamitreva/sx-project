@@ -4,34 +4,45 @@ import { Button, Input, Select } from "antd"
 import { CgShapeRhombus } from "react-icons/cg"
 import { TbOvalVertical } from "react-icons/tb"
 import { LuRectangleHorizontal } from "react-icons/lu"
-import type { EditComponentProps } from "../../../assets/types"
+import type { EditComponentProps, NodeData } from "../../../assets/types"
 import MODULES_ARR from "../../../assets/modules"
-import { Option } from "antd/es/mentions"
-import nodesData from "./../../../assets/data/data.json"
 
-const EditComponent: React.FC<EditComponentProps> = ({ nodeName, onChange, nodeData, setNodeData }) => {
+const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, nodes, setNodeData, setNodes, selectedNodeId}) => {
+  
+  const handleUpdateNodeData = (newData: Partial<NodeData>) => {
+    setNodeData((prev) => ({ ...prev, ...newData }))
+
+    setNodes((prev)=> 
+      prev.map(node => 
+        node.id === selectedNodeId 
+          ? { ...node, data: { ...node.data, ...newData } } 
+          : node
+      )
+    )
+
+    console.log("Updating Node Data:", newData)
+  }
 
   const handleColorButtonClick = (borderColor: string) => {
-    setNodeData({...nodeData, borderColor})
+    handleUpdateNodeData({ borderColor })
   }
 
   const handleShapeButtonClick = (shape: string) => {
-    setNodeData({...nodeData, shape})
+    handleUpdateNodeData({ shape })
   }
 
   const handleModuleChange = (taskModule: string) => {
     const module = MODULES_ARR.find((module) => (module.name === taskModule))
-    setNodeData({ 
-      ...nodeData, 
+    handleUpdateNodeData({ 
       taskModule, 
-      backgroundColor: module?.color || "", 
-      icon: module?.colorIcon
+      backgroundColor: module?.color, 
+      icon: taskModule
     })
   }
 
   const handleStartTasksChange = (value: string[]) => {
     const startTasks = value.map(Number)
-    setNodeData({...nodeData, startTasks})
+    handleUpdateNodeData({ startTasks })
   }
 
   return (
@@ -45,7 +56,7 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, onChange, nodeD
             <label>Label Name: </label>
             <textarea
               value={nodeName}
-              onChange={onChange}
+              onChange={(e) => handleUpdateNodeData({ label: e.target.value })}
               rows={4}
               style={{ width: '100%' }}
             ></textarea>
@@ -90,19 +101,19 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, onChange, nodeD
             <label>Task Module</label>
             <Select value={nodeData.taskModule} onChange={handleModuleChange}>
               {MODULES_ARR.map((module) => (
-                <Option key={module.name} value={module.name}>
+                <Select.Option key={module.name} value={module.name}>
                   {module.name}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </div>
           <div>
             <label>Task Order</label>
             <Select mode="tags" value={nodeData.startTasks.map(String)} onChange={handleStartTasksChange}>
-              {nodesData.map((node) => (
-                <Option key={node.id.toString()} value={node.id.toString()}>
+              {nodes.map((node) => (
+                <Select.Option key={node.id.toString()} value={node.id.toString()}>
                   {node.id.toString()}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </div>
