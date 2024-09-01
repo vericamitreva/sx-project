@@ -7,9 +7,11 @@ import { LuRectangleHorizontal } from "react-icons/lu"
 import type { EditComponentProps, NodeData } from "../../../assets/types"
 import MODULES_ARR from "../../../assets/modules"
 import { fetchResponsibleUsers } from "../FetchResponsibleUsers/FetchResponsibleUsers"
+import { fetchDocumentGroups } from "../FetchDocumentGroups/FetchDocumentGroups"
 
 const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNodeData, handleSaveEdit}) => {
   const [userOptions, setUserOptions] = useState<{ id: number; name: string }[]>([])
+  const [documentGroupsOptions, setDocumentGroupsOptions] = useState<string[]>([])
 
   const handleUpdateNodeData = (newData: Partial<NodeData>) => {
     setNodeData((prev) => ({ ...prev, ...newData }))
@@ -27,6 +29,10 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
     handleUpdateNodeData({ responsibleUser })
   }
 
+  const handleAttachmentTypeChange = (attachmentType: string) => {
+    handleUpdateNodeData( { attachmentType } )
+  }
+
   const handleModuleChange = (taskModule: string) => {
     const module = MODULES_ARR.find((module) => (module.name === taskModule))
     handleUpdateNodeData({ 
@@ -41,6 +47,12 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
     setUserOptions(users)
   }
   getUserOptions()
+
+  const getDocumentGroupsOptions = async () => {
+    const documentGroups = await fetchDocumentGroups()
+    setDocumentGroupsOptions(documentGroups)
+  }
+  getDocumentGroupsOptions()
 
   return (
     <>
@@ -84,11 +96,24 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
           </div>
           <div>
             <label>Attachment Type</label>
+            <Select
+              value={nodeData.attachmentType}
+              onChange={handleAttachmentTypeChange}
+              style={{width: "100%"}}
+            >
+              {documentGroupsOptions.map((group) => (
+                <Select.Option key={group} value={group}>
+                  {group}
+                </Select.Option>
+              ))}
+              
+            </Select>
           </div>
           <div className={styles.labelContainerRow}>
             <label>Has Attachment</label>
             <Input
               type="checkbox"
+              checked={!!nodeData.attachmentType}
             />
           </div>
           <div className={styles.labelContainerRow}>
