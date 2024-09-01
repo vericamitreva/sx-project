@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import styles from "./editComponent.module.css"
 import { Button, Input, InputNumber, Select } from "antd"
 import { CgShapeRhombus } from "react-icons/cg"
@@ -6,8 +6,10 @@ import { TbOvalVertical } from "react-icons/tb"
 import { LuRectangleHorizontal } from "react-icons/lu"
 import type { EditComponentProps, NodeData } from "../../../assets/types"
 import MODULES_ARR from "../../../assets/modules"
+import { fetchResponsibleUsers } from "../FetchResponsibleUsers/FetchResponsibleUsers"
 
 const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNodeData, handleSaveEdit}) => {
+  const [userOptions, setUserOptions] = useState<{ id: number; name: string }[]>([])
 
   const handleUpdateNodeData = (newData: Partial<NodeData>) => {
     setNodeData((prev) => ({ ...prev, ...newData }))
@@ -21,6 +23,10 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
     handleUpdateNodeData({ shape })
   }
 
+  const handleResponsibleUserChange = (responsibleUser: number[]) => {
+    handleUpdateNodeData({ responsibleUser })
+  }
+
   const handleModuleChange = (taskModule: string) => {
     const module = MODULES_ARR.find((module) => (module.name === taskModule))
     handleUpdateNodeData({ 
@@ -29,6 +35,12 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
       icon: taskModule
     })
   }
+
+  const getUserOptions = async () => {
+    const users = await fetchResponsibleUsers()
+    setUserOptions(users)
+  }
+  getUserOptions()
 
   return (
     <>
@@ -105,9 +117,35 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
           </div>
           <div>
             <label>Responsible User</label>
+            <Select
+              mode="multiple"
+              placeholder="Select responsible users"
+              value={nodeData.responsibleUser}
+              onChange={handleResponsibleUserChange}
+              style={{width: "100%"}}
+            >
+              {userOptions.map((user) => (
+                <Select.Option key={user.id} value={user.id}>
+                  {user.name}
+                </Select.Option>
+              ))}
+            </Select>
           </div>
           <div>
             <label>Responsible Group</label>
+            <Select
+              mode="multiple"
+              placeholder="Select responsible users"
+              value={nodeData.responsibleUser}
+              onChange={handleResponsibleUserChange}
+              style={{width: "100%"}}
+            >
+              {userOptions.map((user) => (
+                <Select.Option key={user.id} value={user.id}>
+                  {user.name}
+                </Select.Option>
+              ))}
+            </Select>
           </div>
           <div>
             <Button onClick={handleSaveEdit}>
