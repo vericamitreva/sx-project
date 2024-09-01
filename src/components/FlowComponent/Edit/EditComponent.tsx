@@ -1,27 +1,17 @@
 import React from "react"
 import styles from "./editComponent.module.css"
-import { Button, Input, Select } from "antd"
+import { Button, Input, InputNumber, Select } from "antd"
 import { CgShapeRhombus } from "react-icons/cg"
 import { TbOvalVertical } from "react-icons/tb"
 import { LuRectangleHorizontal } from "react-icons/lu"
 import type { EditComponentProps, NodeData } from "../../../assets/types"
 import MODULES_ARR from "../../../assets/modules"
 
-const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, nodes, setNodeData, setNodes, selectedNodeId}) => {
-  
+const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNodeData, handleSaveEdit}) => {
+
   const handleUpdateNodeData = (newData: Partial<NodeData>) => {
     setNodeData((prev) => ({ ...prev, ...newData }))
-
-    setNodes((prev)=> 
-      prev.map(node => 
-        node.id === selectedNodeId 
-          ? { ...node, data: { ...node.data, ...newData } } 
-          : node
-      )
-    )
-
-    console.log("Updating Node Data:", newData)
-  }
+  }  
 
   const handleColorButtonClick = (borderColor: string) => {
     handleUpdateNodeData({ borderColor })
@@ -38,11 +28,6 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, nodes
       backgroundColor: module?.color, 
       icon: taskModule
     })
-  }
-
-  const handleStartTasksChange = (value: string[]) => {
-    const startTasks = value.map(Number)
-    handleUpdateNodeData({ startTasks })
   }
 
   return (
@@ -88,14 +73,18 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, nodes
           <div>
             <label>Attachment Type</label>
           </div>
-          <div>
+          <div className={styles.labelContainerRow}>
             <label>Has Attachment</label>
             <Input
               type="checkbox"
             />
           </div>
-          <div>
+          <div className={styles.labelContainerRow}>
             <label>Time to complete in days:</label>
+            <InputNumber
+            value={nodeData.timeToCompleteInDays}
+            onChange={(timeToCompleteInDays) => handleUpdateNodeData({ timeToCompleteInDays })}
+            />
           </div>
           <div className={styles.labelContainer}>
             <label>Task Module</label>
@@ -107,21 +96,26 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, nodes
               ))}
             </Select>
           </div>
-          <div>
+          <div className={styles.labelContainerRow}>
             <label>Task Order</label>
-            <Select mode="tags" value={nodeData.startTasks.map(String)} onChange={handleStartTasksChange}>
-              {nodes.map((node) => (
-                <Select.Option key={node.id.toString()} value={node.id.toString()}>
-                  {node.id.toString()}
-                </Select.Option>
-              ))}
-            </Select>
+            <InputNumber
+              value={nodeData.taskOrder}
+              onChange={(taskOrder) => handleUpdateNodeData({ taskOrder })}
+            />
           </div>
           <div>
             <label>Responsible User</label>
           </div>
           <div>
             <label>Responsible Group</label>
+          </div>
+          <div>
+            <Button onClick={handleSaveEdit}>
+              SAVE
+            </Button>
+            {/* <Button onClick={handleCancelEdit}>
+              CANCEL
+            </Button> */}
           </div>
         </div>
       </div>

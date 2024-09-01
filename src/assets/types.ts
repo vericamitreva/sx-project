@@ -18,8 +18,8 @@ interface NodeData {
   taskType: TaskType;
   attachmentType: string;
   hasAttachment: boolean;
-  timeToCompleteInDays: number;
-  taskOrder: number;
+  timeToCompleteInDays?: number | null;
+  taskOrder: number | null;
   responsibleUser: number[];
   responsibleGroup: number[];
   icon?: React.ReactNode
@@ -60,6 +60,7 @@ interface EditComponentProps {
   setNodes: (update: (prev: Node[]) => Node[]) => void
   setNodeData: (update: (prev: NodeData) => NodeData) => void
   selectedNodeId: string
+  handleSaveEdit: () => void
 }
 
 export type { Person, CustomNode, SelectComponentProps, NodeData, EditComponentProps } 

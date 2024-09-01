@@ -25,6 +25,15 @@
     gap: 0.5rem;
 }
 
+.labelContainerRow {
+    display: flex;
+    flex-direction: row;
+}
+
+.labelContainerRow label {
+    min-width: 60%;
+}
+
 label {
     font-size: small;
 }

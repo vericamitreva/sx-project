@@ -82,6 +82,24 @@ const FlowComponent = () => {
     setIsEditOpen(true)
   }
 
+  const handleSaveEdit = async () => {
+    if (selectedNodeId) {
+      const updatedNodes = nodes.map((node) =>
+        node.id === selectedNodeId
+          ? { ...node, data: nodeData }
+          : node
+      )
+      setNodes(updatedNodes)
+      await saveNodes(updatedNodes as CustomNode[])
+      localStorage.setItem("nodes", JSON.stringify(updatedNodes))
+      setIsEditOpen(false)
+    }
+  }
+
+  const handleButtonClick = () => {
+    localStorage.clear()
+  }
+
   useEffect(() => {
     fetchFlowData(
       setNodes,
@@ -92,34 +110,6 @@ const FlowComponent = () => {
     )
   }, [setNodes, setEdges, setViewport, fitView])
 
-  useEffect(() => {
-    const updateNode = async () => {
-      if (selectedNodeId) {
-        const updatedNodes = nodes.map((node) =>
-          node.id === selectedNodeId
-            ? { ...node, data: { ...node.data, ...nodeData } }
-            : node
-        )
-
-        setNodes(updatedNodes)
-        await saveNodes(updatedNodes as CustomNode[])
-        //await fetchNodes()
-        console.log("Updated Nodes", updatedNodes)
-      }
-    }
-
-    updateNode()
-
-    console.log("Selected Node ID:", selectedNodeId)
-    console.log("Node Data:", nodeData)
-
-  }, [nodeData])
-
-  const handleButtonClick = () => {
-    localStorage.clear()
-  }
-
-  //console.log(nodes)
 
   return (
     <>
@@ -170,6 +160,7 @@ const FlowComponent = () => {
             nodes={nodes}
             setNodes={setNodes}
             selectedNodeId={selectedNodeId} 
+            handleSaveEdit={handleSaveEdit}
           />
         ) : (
           ''
