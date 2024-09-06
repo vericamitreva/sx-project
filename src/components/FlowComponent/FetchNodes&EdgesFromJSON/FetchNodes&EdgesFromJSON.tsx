@@ -40,7 +40,7 @@ export const fetchNodesFromJson = async (): Promise<CustomNode[]> => {
   })
 
   const mergedNodes = jsonNodes.map(jsonNode => {
-    const existingNode = parsedNodes.find(node => node.id === jsonNode.id)
+    const existingNode = parsedNodes.find((node) => node.id === jsonNode.id)
     return existingNode ? { ...jsonNode, ...existingNode } : jsonNode
   })
   
@@ -49,7 +49,10 @@ export const fetchNodesFromJson = async (): Promise<CustomNode[]> => {
 }
 
 export const fetchEdgesFromJson = async (): Promise<Edge[]> => {
-  return data.flatMap((node) =>
+  let localStorageEdges = localStorage.getItem("edges")
+  let parsedEdges : Edge[] = localStorageEdges ? JSON.parse(localStorageEdges) : []
+
+  let jsonEdges = data.flatMap((node) => 
     node.start_tasks.map((startTask) => ({
       id: `${node.id}-${startTask}`,
       source: node.id.toString(),
@@ -59,5 +62,12 @@ export const fetchEdgesFromJson = async (): Promise<Edge[]> => {
       style: { strokeWidth: 1, stroke: 'black' },
     }))
   )
+
+  const mergedEdges = jsonEdges.map((jsonEdge) => {
+    const existingEdge = parsedEdges.find((egde) => egde.id === jsonEdge.id)
+    return existingEdge ? {...jsonEdge, ...existingEdge} : jsonEdge
+  })
+
+  return mergedEdges
 }
 

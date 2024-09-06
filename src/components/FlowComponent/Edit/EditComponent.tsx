@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import styles from "./editComponent.module.css"
 import { Button, Input, InputNumber, Select } from "antd"
 import { CgShapeRhombus } from "react-icons/cg"
@@ -9,7 +9,7 @@ import MODULES_ARR from "../../../assets/modules"
 import { fetchResponsibleUsers } from "../FetchResponsibleUsers/FetchResponsibleUsers"
 import { fetchDocumentGroups } from "../FetchDocumentGroups/FetchDocumentGroups"
 
-const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNodeData, handleSaveEdit}) => {
+const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodes, nodeData, setNodeData, handleSaveEdit}) => {
   const [userOptions, setUserOptions] = useState<{ id: number; name: string }[]>([])
   const [documentGroupsOptions, setDocumentGroupsOptions] = useState<string[]>([])
 
@@ -30,8 +30,12 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
   }
 
   const handleAttachmentTypeChange = (attachmentType: string) => {
-    handleUpdateNodeData( { attachmentType } )
+    handleUpdateNodeData({ attachmentType })
   }
+
+const handleStartTasksChange = (startTasks: number[]) => {
+  handleUpdateNodeData({ startTasks })
+}
 
   const handleModuleChange = (taskModule: string) => {
     const module = MODULES_ARR.find((module) => (module.name === taskModule))
@@ -42,17 +46,17 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
     })
   }
 
-  const getUserOptions = async () => {
-    const users = await fetchResponsibleUsers()
-    setUserOptions(users)
-  }
-  getUserOptions()
+  useEffect(() => {
+    const fetchData = async () => {
+      const users = await fetchResponsibleUsers()
+      setUserOptions(users)
 
-  const getDocumentGroupsOptions = async () => {
-    const documentGroups = await fetchDocumentGroups()
-    setDocumentGroupsOptions(documentGroups)
-  }
-  getDocumentGroupsOptions()
+      const documentGroups = await fetchDocumentGroups()
+      setDocumentGroupsOptions(documentGroups)
+    }
+
+    fetchData()
+  }, [])
 
   return (
     <>
@@ -94,6 +98,13 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
               </Button>
             </div>
           </div>
+          {/* <div>
+            <label>Set a node ID</label>
+            <Input
+            value={nodeData.id}
+            onChange={(e) => handleUpdateNodeData({ id: e.target.value })}
+            />
+          </div> */}
           <div>
             <label>Attachment Type</label>
             <Select
@@ -141,6 +152,22 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
             />
           </div>
           <div>
+            <label>Start Tasks</label>
+            <Select
+            mode="multiple"
+            placeholder="Select start tasks"
+            value={nodeData.startTasks}
+            onChange={handleStartTasksChange}
+            style={{width: "100%"}}
+            >
+            {nodes.map((node) => (
+              <Select.Option key={node.id} value={node.id}>
+                {node.id}
+              </Select.Option>
+            ))}
+            </Select>
+          </div>
+          <div>
             <label>Responsible User</label>
             <Select
               mode="multiple"
@@ -160,7 +187,7 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodeData, setNo
             <label>Responsible Group</label>
             <Select
               mode="multiple"
-              placeholder="Select responsible users"
+              placeholder="Select responsible group"
               value={nodeData.responsibleUser}
               onChange={handleResponsibleUserChange}
               style={{width: "100%"}}

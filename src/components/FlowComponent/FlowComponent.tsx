@@ -16,7 +16,7 @@ import EditComponent from './Edit/EditComponent.tsx'
 import CustomNodeComponent from './CustomNode/CustomNodeComponent.tsx'
 import style from "./flowComponent.module.css"
 import type { CustomNode, NodeData, TaskType } from '../../assets/types.ts'
-import { saveNodes} from './DataOperations/dataOperations.tsx'
+import { saveEdges, saveNodes} from './DataOperations/dataOperations.tsx'
 import { addNewNode } from './AddNewNode/addNewNode.tsx'
 import { fetchFlowData } from './FetchFlowData/fetchFlowData.tsx'
 
@@ -24,7 +24,7 @@ const nodeTypes = { customNode: CustomNodeComponent }
 const edgeTypes = { customEdge: CustomEdgeComponent }
 
 const FlowComponent = () => {
-  
+
   const initialNodeData = {
     id: '',
     label: 'New Node',
@@ -85,19 +85,52 @@ const FlowComponent = () => {
   const handleSaveEdit = async () => {
     if (selectedNodeId) {
       const updatedNodes = nodes.map((node) =>
-        node.id === selectedNodeId
-          ? { ...node, data: nodeData }
-          : node
+        node.id === selectedNodeId ? { ...node, data: nodeData } : node
       )
       setNodes(updatedNodes)
       await saveNodes(updatedNodes as CustomNode[])
       localStorage.setItem("nodes", JSON.stringify(updatedNodes))
+
+      const updatedEdges = edges.filter(edge => 
+        nodeData.startTasks.includes(parseInt(edge.target)) 
+        || edge.source !== selectedNodeId)
+      
+      nodeData.startTasks.forEach((startTask) => {
+        const alreadyExistingEdge = updatedEdges.some(edge => 
+          edge.source === selectedNodeId && edge.target === startTask.toString()
+        )
+
+        if (!alreadyExistingEdge) {
+          updatedEdges.push({
+            id: `${selectedNodeId}-${startTask}`,
+            source: selectedNodeId,
+            target: startTask.toString(),
+            type: "customEdge",
+            markerEnd: { type: MarkerType.Arrow, color: "black"},
+            style: { strokeWidth: 1, stroke: "black" }
+          })
+        }
+      })
+
+      console.log(updatedEdges)
+
+      setEdges(updatedEdges)
+      await saveEdges(updatedEdges as Edge[])
+      localStorage.setItem("edges", JSON.stringify(updatedEdges))
+
       setIsEditOpen(false)
     }
   }
 
   const handleButtonClick = () => {
     localStorage.clear()
+    fetchFlowData(
+      setNodes,
+      setEdges,
+      setViewport,
+      fitView,
+      setContainerWidth
+    )
   }
 
   useEffect(() => {
@@ -109,7 +142,6 @@ const FlowComponent = () => {
       setContainerWidth
     )
   }, [setNodes, setEdges, setViewport, fitView])
-
 
   return (
     <>
@@ -152,19 +184,17 @@ const FlowComponent = () => {
             {/* <Controls /> */}
           </ReactFlow>
         </div>
-        {isEditOpen ? (
+        {isEditOpen && selectedNodeId &&
           <EditComponent
             nodeName={nodeData.label}
             nodeData={nodeData}
             setNodeData={setNodeData}
             nodes={nodes}
             setNodes={setNodes}
-            selectedNodeId={selectedNodeId} 
+            selectedNodeId={selectedNodeId}
             handleSaveEdit={handleSaveEdit}
           />
-        ) : (
-          ''
-        )}
+        }
       </div>
     </>
   )

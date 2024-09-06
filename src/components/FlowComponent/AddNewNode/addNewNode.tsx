@@ -17,6 +17,7 @@ export const addNewNode = (
 
     const newNodeData: NodeData = {
       ...initialNodeData,
+      startTasks: [parseInt(newNodeId)+1],
       id: newNodeId,
     }
 
@@ -35,7 +36,7 @@ export const addNewNode = (
     saveNodes(updatedNodes as CustomNode[]) 
 
     const newEdge: Edge = {
-      id: `${newNodeId}-${newNode.data.startTasks[0]}`,
+      id: `${newNodeId}-${newNode.data.startTasks}`,
       source: (parseInt(newNodeId)-1).toString(),
       target: newNodeId,
       type: "customEdge",
