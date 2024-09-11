@@ -159,7 +159,7 @@ const FlowComponent = () => {
             nodes={nodes}
             edges={edges}
             nodesDraggable={false}
-            nodesConnectable={false}
+            nodesConnectable={true}
             onConnect={onConnect}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}

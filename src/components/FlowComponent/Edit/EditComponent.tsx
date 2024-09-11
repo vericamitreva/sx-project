@@ -33,9 +33,15 @@ const EditComponent: React.FC<EditComponentProps> = ({ nodeName, nodes, nodeData
     handleUpdateNodeData({ attachmentType })
   }
 
-const handleStartTasksChange = (startTasks: number[]) => {
-  handleUpdateNodeData({ startTasks })
-}
+  const handleHasAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.checked) {
+      handleUpdateNodeData({ attachmentType: "" })
+    }
+  }
+
+  const handleStartTasksChange = (startTasks: number[]) => {
+    handleUpdateNodeData({ startTasks })
+  }
 
   const handleModuleChange = (taskModule: string) => {
     const module = MODULES_ARR.find((module) => (module.name === taskModule))
@@ -98,19 +104,13 @@ const handleStartTasksChange = (startTasks: number[]) => {
               </Button>
             </div>
           </div>
-          {/* <div>
-            <label>Set a node ID</label>
-            <Input
-            value={nodeData.id}
-            onChange={(e) => handleUpdateNodeData({ id: e.target.value })}
-            />
-          </div> */}
           <div>
             <label>Attachment Type</label>
             <Select
               value={nodeData.attachmentType}
               onChange={handleAttachmentTypeChange}
               style={{width: "100%"}}
+              allowClear={true}
             >
               {documentGroupsOptions.map((group) => (
                 <Select.Option key={group} value={group}>
@@ -125,6 +125,7 @@ const handleStartTasksChange = (startTasks: number[]) => {
             <Input
               type="checkbox"
               checked={!!nodeData.attachmentType}
+              onChange={handleHasAttachmentChange}
             />
           </div>
           <div className={styles.labelContainerRow}>
