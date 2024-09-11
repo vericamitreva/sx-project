@@ -35,7 +35,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data }) => {
         position={Position.Top}
         id="top"
         // style={{display: "none"}}
-        isConnectable={false}
+        isConnectable={true}
         className={`${handleClass} ${handleClasses.top}`}
         style={{borderColor: "transparent", backgroundColor: "transparent"}}
       />
@@ -57,7 +57,7 @@ const CustomNodeComponent: React.FC<NodeProps> = ({ data }) => {
         type="source"
         position={Position.Bottom}
         id="bottom"
-        isConnectable={false}
+        isConnectable={true}
         // style={{display: "none"}}
         className={`${handleClass} ${handleClasses.bottom}`}
         style={{borderColor: "transparent", backgroundColor: "transparent"}}

@@ -1,8 +1,7 @@
 import { Edge } from "reactflow"
 import { CustomNode, NodeData } from "../../../assets/types"
 import { getLayoutedElements } from "../DagreLayout/DagreLayout"
-import { saveEdges, saveNodes } from "../DataOperations/dataOperations"
-import { MarkerType } from "@xyflow/react"
+import { saveNodes } from "../DataOperations/dataOperations"
 
 export const addNewNode = (
     nodes: CustomNode[], 
@@ -17,7 +16,7 @@ export const addNewNode = (
 
     const newNodeData: NodeData = {
       ...initialNodeData,
-      startTasks: [parseInt(newNodeId)+1],
+      startTasks: [],
       id: newNodeId,
     }
 
@@ -35,22 +34,23 @@ export const addNewNode = (
     setNodes(updatedNodes)
     saveNodes(updatedNodes as CustomNode[]) 
 
-    const newEdge: Edge = {
-      id: `${newNodeId}-${newNode.data.startTasks}`,
-      source: (parseInt(newNodeId)-1).toString(),
-      target: newNodeId,
-      type: "customEdge",
-      markerEnd: { type: MarkerType.Arrow, color: 'black' },
-      style: { strokeWidth: 1, stroke: 'black' },
-    }
+    // const newEdge: Edge = {
+    //   id: `${newNodeId}-${newNode.data.startTasks}`,
+    //   source: (parseInt(newNodeId)-1).toString(),
+    //   target: newNodeId,
+    //   type: "customEdge",
+    //   markerEnd: { type: MarkerType.Arrow, color: 'black' },
+    //   style: { strokeWidth: 1, stroke: 'black' },
+    // }
 
-    const updatedEdges = [...edges, newEdge]
-    setEdges(updatedEdges)
-    saveEdges(updatedEdges)
+    // const updatedEdges = [...edges, newEdge]
+    // setEdges(updatedEdges)
+    // saveEdges(updatedEdges)
 
     const {nodes: layoutedNodes, edges: layoutedEdges} = getLayoutedElements(
       updatedNodes as CustomNode[],
-      updatedEdges,
+      // updatedEdges,
+      edges,
       "TB"
     )
 

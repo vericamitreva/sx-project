@@ -61,19 +61,40 @@ const FlowComponent = () => {
   }
 
   const onConnect = useCallback(
-    (params: any) =>
-      setEdges((edges) =>
-        addEdge(
+    (params: any) => {
+      setEdges((currentEdges) => {
+        const updatedEdges = addEdge(
           {
             ...params,
             type: 'customEdge',
             markerEnd: { type: MarkerType.Arrow, color: 'black' },
             style: { strokeWidth: 1, stroke: 'black' },
           },
-          edges
+          currentEdges
         )
-      ),
-    [edges]
+
+      saveEdges(updatedEdges as Edge[])
+      localStorage.setItem("edges", JSON.stringify(updatedEdges))
+
+      return updatedEdges
+
+      })
+      
+      setNodes((currentNodes) => currentNodes.map((node) => {
+        if (node.id === params.source) {
+          const updatedStartTasks = [...node.data.startTasks, parseInt(params.target)]
+          return {
+            ...node,
+            data: { ...node.data, startTasks: updatedStartTasks}
+          }
+        }
+        return node
+      }))
+
+      saveNodes(nodes as CustomNode[])
+      localStorage.setItem("nodes", JSON.stringify(nodes))
+      
+    }, [setEdges, setNodes, nodes]
   )
 
   const selectNode = (node: CustomNode) => {
